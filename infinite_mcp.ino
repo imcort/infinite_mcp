@@ -99,146 +99,14 @@ bool ConnectClient() {  //从UDP或者EEPROM连接客户端
 
 }
 
-
-//uint8_t ReceiveClientData() { //接收客户端数据
-//  // Read all the lines of the reply from server and print them to Serial
-//
-//  int PacketSize = client.available();
-//
-//  if (PacketSize > 0) {
-//
-//    Serial.print("Incoming MSG length:");
-//    Serial.print(PacketSize);
-//
-//    uint32_t recvSize;
-//    uint8_t *recvString;
-//    uint8_t offset = 0;
-//
-//    if (PacketSize == 4) {
-//      Serial.println(" Type 4.");
-//      uint8_t rawRecvSize[4];
-//      client.read(rawRecvSize, 4);
-//      recvSize = *(uint32_t*)rawRecvSize;
-//
-//      recvString = (uint8_t*)malloc(recvSize + 1);
-//      //PacketSize = client.available();
-//      client.read(recvString, recvSize);
-//      recvString[recvSize] = '\0';
-//
-//      //Serial.println((char*)recvString);
-//    } else {
-//      Serial.println(" Type Other.");
-//      recvString = (uint8_t*)malloc(PacketSize + 1);
-//      client.read(recvString, PacketSize);
-//      recvString[PacketSize] = '\0';
-//
-//      recvSize = *(uint32_t*)recvString;
-//      offset = 4;
-//      Serial.println((char*)recvString);
-//    }
-//    client.flush();
-//    Serial.println(recvSize);
-//    Serial.println(PacketSize);
-//
-//
-//    if ((recvSize == (PacketSize - 4)) || (PacketSize == 4)) {
-//
-//      //recvSize = PacketSize;
-//
-//
-//
-//      doc.clear();
-//      DeserializationError error = deserializeJson(doc, (recvString + offset));
-//      free(recvString);
-//
-//      if (error) {
-//        Serial.print(F("###Json Parser Failed: "));
-//        Serial.println(error.c_str());
-//        return -1;
-//      }
-//
-//      JsonObject root = doc.as<JsonObject>();
-//
-//      String MsgType = root["Type"];
-//      if (MsgType == "Fds.IFAPI.APIAircraftState") {
-//        Serial.println("Fds.IFAPI.APIAircraftState");
-//        APIAircraftStateParser(root);
-//        serializeJsonPretty(root, Serial);
-//        return 1;
-//
-//      } else if (MsgType == "Fds.IFAPI.APIAircraftInfo") {
-//        Serial.println("Fds.IFAPI.APIAircraftInfo");
-//        APIAircraftInfoParser(root);
-//        return 2;
-//
-//      } else if (MsgType == "Fds.IFAPI.IFAPIStatus") {
-//        Serial.println("Fds.IFAPI.IFAPIStatus");
-//        APIDeviceInfoParser(root);
-//        return 3;
-//
-//      } else {
-//        Serial.print(F("###Msg Type Not Support: "));
-//        Serial.println(MsgType.c_str());
-//        return -1;
-//      }
-//    } else {
-//      client.flush();
-//      free(recvString);
-//      return -1;
-//    }
-//
-//  }
-//  //Serial.println("client not available");
-//  return -1;
-//
-//}
-
 void onData(void* obj, AsyncClient* c, void *data, size_t len) {
-  //  Serial.print("onData: ");
-  //  Serial.write((uint8_t*)data,len);
-  //  Serial.print("Len: ");
-  //  Serial.println(len);
-
   if (len > 4) {
-      
-      doc.clear();
-      DeserializationError error = deserializeJson(doc, (uint8_t*)data);
-
-      if (error) {
-        Serial.print(F("###Json Parser Failed: "));
-        Serial.println(error.c_str());
-        return;
-      }
-
-      JsonObject root = doc.as<JsonObject>();
-
-      String MsgType = root["Type"];
-      if (MsgType == "Fds.IFAPI.APIAircraftState") {
-        Serial.println("Fds.IFAPI.APIAircraftState");
-        APIAircraftStateParser(root);
-        serializeJsonPretty(root, Serial);
-        return;
-
-      } else if (MsgType == "Fds.IFAPI.APIAircraftInfo") {
-        Serial.println("Fds.IFAPI.APIAircraftInfo");
-        APIAircraftInfoParser(root);
-        return;
-
-      } else if (MsgType == "Fds.IFAPI.IFAPIStatus") {
-        Serial.println("Fds.IFAPI.IFAPIStatus");
-        APIDeviceInfoParser(root);
-        return;
-
-      } else {
-        Serial.print("###Msg Type Not Support: ");
-        Serial.println(MsgType.c_str());
-        return;
-      }
-   
-
+      ParseRecivedData(doc, (uint8_t*)data, len);
   }
+}
 
-  
+void onConnect(void* obj, AsyncClient* c) {
+  Serial.println("TCP Connected..");  
 }
 
 void setup()
@@ -307,7 +175,7 @@ void setup()
   //////////////////////////////////////////////////
   Serial.println("Initalize TCP Listen");
   //////////////////////////////////////////////////
-  //client.onConnect(onConnect);     //on successful connect
+  client.onConnect(onConnect);     //on successful connect
   client.onData(onData);           //data received
   /*
     client.onConnect(onConnect);     //on successful connect

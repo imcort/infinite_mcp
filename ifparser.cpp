@@ -95,3 +95,43 @@ void APIDeviceInfoParser(JsonObject& root) {
   //PlayMode
 
 }
+
+void ParseRecivedData(DynamicJsonDocument& doc, uint8_t* data, size_t& len) {
+
+  doc.clear();
+  DeserializationError error = deserializeJson(doc, data, len);
+
+  if (error) {
+    Serial.print(F("###Json Parser Failed: "));
+    Serial.println(error.c_str());
+    return;
+  }
+
+  JsonObject root = doc.as<JsonObject>();
+
+  String MsgType = root["Type"];
+  if (MsgType == "Fds.IFAPI.APIAircraftState") {
+    Serial.println("Fds.IFAPI.APIAircraftState");
+    APIAircraftStateParser(root);
+    serializeJsonPretty(root, Serial);
+    return;
+
+  } else if (MsgType == "Fds.IFAPI.APIAircraftInfo") {
+    Serial.println("Fds.IFAPI.APIAircraftInfo");
+    APIAircraftInfoParser(root);
+    return;
+
+  } else if (MsgType == "Fds.IFAPI.IFAPIStatus") {
+    Serial.println("Fds.IFAPI.IFAPIStatus");
+    APIDeviceInfoParser(root);
+    return;
+
+  } else {
+    Serial.print("###Msg Type Not Support: ");
+    Serial.println(MsgType.c_str());
+    return;
+  }
+
+
+
+}

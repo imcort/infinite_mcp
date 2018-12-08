@@ -1,5 +1,6 @@
 #include <ArduinoJson.h>
 #include <IPAddress.h>
+#include <Arduino.h>
 
 struct AirplaneFlapsConfiguration{
 
@@ -90,3 +91,5 @@ struct AirplaneState{
 void APIAircraftStateParser(JsonObject& root);
 void APIAircraftInfoParser(JsonObject& root);
 void APIDeviceInfoParser(JsonObject& root);
+
+void ParseRecivedData(DynamicJsonDocument& doc, uint8_t* data, size_t& len);
