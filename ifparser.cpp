@@ -122,11 +122,13 @@ void ParseTCPRecivedData(uint8_t* data, size_t& len) {
   } else if (MsgType == "Fds.IFAPI.APIAircraftInfo") {
     Serial.println("Fds.IFAPI.APIAircraftInfo");
     APIAircraftInfoParser(root);
+    serializeJsonPretty(root, Serial);
     return;
 
   } else if (MsgType == "Fds.IFAPI.IFAPIStatus") {
     Serial.println("Fds.IFAPI.IFAPIStatus");
     APIDeviceInfoParser(root);
+    serializeJsonPretty(root, Serial);
     return;
 
   } else {
@@ -194,7 +196,7 @@ bool LoadClientAddr(IFClient& cli) { //读取上次客户端地址到EEPROM
 bool ConnectClient() {  //从UDP或者EEPROM连接客户端
 
   if (ClientAddr.updated) {
-
+    Serial.print("Connecting From UDP");
     client.connect(ClientAddr.IP, ClientAddr.Port);
     if (client.connected()) {
       ClientAddr.IP.printTo(Serial);
@@ -208,6 +210,9 @@ bool ConnectClient() {  //从UDP或者EEPROM连接客户端
 
   IFClient lastClient;
   if (LoadClientAddr(lastClient)) {
+    Serial.print("Connecting From EEPROM");
+    lastClient.IP.printTo(Serial);
+    Serial.println(lastClient.Port);
     client.connect(lastClient.IP, lastClient.Port);
     if (client.connected()) {
       Serial.print("Connected.From EEPROM");

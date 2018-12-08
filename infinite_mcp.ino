@@ -117,7 +117,7 @@ void loop() {
 
   }
   digitalWrite(CONNECT_LED, 0);
-
+  ticker.attach(0.2, blinkLED);
   for (;;) {
 
     //Realtime Task: Connection test
@@ -128,7 +128,11 @@ void loop() {
     }
 
     SendCommandToClient("Airplane.Getstate");
-    delay(200);
+    delay(100);
+    SendCommandToClient("Airplane.GetInfo");
+    delay(100);
+    SendCommandToClient("InfiniteFlight.GetStatus");
+    delay(100);
   }
 
 }
