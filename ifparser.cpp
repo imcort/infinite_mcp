@@ -3,7 +3,7 @@
 AirplaneState CurrentAirplane;
 
 IFClient ClientAddr;
-
+DynamicJsonDocument doc;
 
 void APIAircraftStateParser(JsonObject& root) {
 
@@ -99,7 +99,7 @@ void APIDeviceInfoParser(JsonObject& root) {
 
 }
 
-void ParseTCPRecivedData(DynamicJsonDocument& doc, uint8_t* data, size_t& len) {
+void ParseTCPRecivedData(uint8_t* data, size_t& len) {
 
   doc.clear();
   DeserializationError error = deserializeJson(doc, data, len);
@@ -139,7 +139,7 @@ void ParseTCPRecivedData(DynamicJsonDocument& doc, uint8_t* data, size_t& len) {
 
 }
 
-void ParseUDPRecivedData(DynamicJsonDocument& doc, uint8_t* data, size_t& len) {
+void ParseUDPRecivedData(uint8_t* data, size_t& len) {
 
   DeserializationError err = deserializeJson(doc, data, len);
 
@@ -208,8 +208,6 @@ bool ConnectClient() {  //从UDP或者EEPROM连接客户端
 
   IFClient lastClient;
   if (LoadClientAddr(lastClient)) {
-    lastClient.IP.printTo(Serial);
-    Serial.println(lastClient.Port);
     client.connect(lastClient.IP, lastClient.Port);
     if (client.connected()) {
       Serial.print("Connected.From EEPROM");
@@ -221,5 +219,101 @@ bool ConnectClient() {  //从UDP或者EEPROM连接客户端
   }
 
   return false;
+
+}
+
+void SendCommandToClient(String Cmd/*, APICommand Cmd*/) {
+
+  // We now create a URI for the request
+  doc.clear();
+  JsonObject root = doc.to<JsonObject>();
+
+  root["Command"] = Cmd;
+  root.createNestedArray("Parameters");
+
+  String JsonCommand;
+  serializeJson(root, JsonCommand);
+
+  Serial.println(JsonCommand);
+  uint32_t strsize = JsonCommand.length();
+
+  client.write((char*)(&strsize), 4);          //size
+  client.write(JsonCommand.c_str(), strsize);     //data
+
+}
+
+void SendJoystickToClient(uint8_t Joyname, int16_t Joyvalue) {
+
+  // We now create a URI for the request
+  doc.clear();
+  JsonObject root = doc.to<JsonObject>();
+
+  root["Command"] = "NetworkJoystick.SetAxisValue";
+  JsonArray param = root.createNestedArray("Parameters");
+  JsonObject paramvalue = param.createNestedObject();
+  paramvalue["Name"] = (String)Joyname;
+  paramvalue["Value"] = (String)Joyvalue;
+
+
+  //Encode and Send:
+  String JsonCommand;
+  serializeJson(root, JsonCommand);
+
+  //Serial.println(JsonCommand);
+  uint32_t strsize = JsonCommand.length();
+
+  client.write((char*)(&strsize), 4);          //size
+  client.write(JsonCommand.c_str(), strsize);     //data
+
+}
+
+void SendPOVToClient(int8_t xValue, int8_t yValue) {
+
+  // We now create a URI for the request
+  doc.clear();
+  JsonObject root = doc.to<JsonObject>();
+
+  root["Command"] = "NetworkJoystick.SetPOVState";
+  JsonArray param = root.createNestedArray("Parameters");
+  JsonObject paramvalue = param.createNestedObject();
+  paramvalue["Name"] = "X";
+  paramvalue["Value"] = (String)xValue;
+  paramvalue = param.createNestedObject();
+  paramvalue["Name"] = "Y";
+  paramvalue["Value"] = (String)yValue;
+
+  //Encode and Send:
+  String JsonCommand;
+  serializeJson(root, JsonCommand);
+
+  //Serial.println(JsonCommand);
+  uint32_t strsize = JsonCommand.length();
+
+  client.write((char*)(&strsize), 4);          //size
+  client.write(JsonCommand.c_str(), strsize);     //data
+
+}
+
+void SendButtonToClient(uint8_t btnNum, bool isPress) {
+
+  // We now create a URI for the request
+  doc.clear();
+  JsonObject root = doc.to<JsonObject>();
+
+  root["Command"] = "NetworkJoystick.SetButtonState";
+  JsonArray param = root.createNestedArray("Parameters");
+  JsonObject paramvalue = param.createNestedObject();
+  paramvalue["Name"] = (String)btnNum;
+  paramvalue["Value"] = isPress ? "Down" : "Up";
+
+  //Encode and Send:
+  String JsonCommand;
+  serializeJson(root, JsonCommand);
+
+  Serial.println(JsonCommand);
+  uint32_t strsize = JsonCommand.length();
+
+  client.write((char*)(&strsize), 4);          //size
+  client.write(JsonCommand.c_str(), strsize);     //data
 
 }

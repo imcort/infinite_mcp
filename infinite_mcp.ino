@@ -5,13 +5,12 @@
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>
 
-#include <ArduinoJson.h>
+//#include <ArduinoJson.h>
 
 #include <SPI.h>
 #include "EEPROM.h"
 #include <Ticker.h>
 
-#include "hidjoystickrptparser.h"
 #include "ifparser.h"
 
 #define ListenUdpPort 15000  // local port to listen on
@@ -28,8 +27,6 @@ Ticker ticker;
 
 bool ConnectFlag = 0;
 
-DynamicJsonDocument doc;
-
 void blinkLED() { //切换LED状态
   static bool WifiLedState = 0;
   digitalWrite(WIFI_LED, WifiLedState);
@@ -43,7 +40,7 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 
 void onData(void* obj, AsyncClient* c, void *data, size_t len) {
   if (len > 4) {
-    ParseTCPRecivedData(doc, (uint8_t*)data, len);
+    ParseTCPRecivedData((uint8_t*)data, len);
   }
 }
 
@@ -90,7 +87,7 @@ void setup()
     Serial.println("UDP listening");
     udp.onPacket([](AsyncUDPPacket packet) {
       size_t len = packet.length();
-      ParseUDPRecivedData(doc, packet.data(), len);
+      ParseUDPRecivedData(packet.data(), len);
       
     });
   }
@@ -131,7 +128,7 @@ void loop() {
     }
 
     SendCommandToClient("Airplane.Getstate");
-    delay(500);
+    delay(200);
   }
 
 }
