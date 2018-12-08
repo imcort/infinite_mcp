@@ -2,6 +2,9 @@
 
 AirplaneState CurrentAirplane;
 
+IFClient ClientAddr;
+
+
 void APIAircraftStateParser(JsonObject& root) {
 
   CurrentAirplane.Result = root["Result"];
@@ -96,7 +99,7 @@ void APIDeviceInfoParser(JsonObject& root) {
 
 }
 
-void ParseRecivedData(DynamicJsonDocument& doc, uint8_t* data, size_t& len) {
+void ParseTCPRecivedData(DynamicJsonDocument& doc, uint8_t* data, size_t& len) {
 
   doc.clear();
   DeserializationError error = deserializeJson(doc, data, len);
@@ -133,5 +136,90 @@ void ParseRecivedData(DynamicJsonDocument& doc, uint8_t* data, size_t& len) {
   }
 
 
+
+}
+
+void ParseUDPRecivedData(DynamicJsonDocument& doc, uint8_t* data, size_t& len) {
+
+  DeserializationError err = deserializeJson(doc, data, len);
+
+  if (err) {
+    Serial.print(F("deserializeJson() failed: "));
+    Serial.println(err.c_str());
+    return;
+  }
+
+  JsonObject obj = doc.as<JsonObject>();
+
+  JsonArray arr = obj["Addresses"];
+
+  for (int i = 0; i < arr.size(); i++) {
+
+    if (ClientAddr.IP.fromString(arr[i].as<String>())) {
+
+      ClientAddr.Port = obj["Port"];
+      ClientAddr.updated = true;
+      return;
+
+    }
+  }
+
+}
+
+void SaveClientAddr(IFClient addr) {  //保存上次客户端地址到EEPROM
+  int address = 0;
+  EEPROM.writeUInt(address, uint32_t(addr.IP));
+  address += sizeof(uint32_t(addr.IP));
+  EEPROM.writeUShort(address, addr.Port);
+  EEPROM.commit();
+}
+
+bool LoadClientAddr(IFClient& cli) { //读取上次客户端地址到EEPROM
+  int address = 0;
+  uint32_t ip = EEPROM.readUInt(address);
+  address += sizeof(ip);
+  uint16_t port = EEPROM.readUShort(address);
+
+  if (ip & port) {
+
+    cli.IP = ip;
+    cli.Port = port;
+    return true;
+  } else {
+    return false;
+  }
+
+}
+
+bool ConnectClient() {  //从UDP或者EEPROM连接客户端
+
+  if (ClientAddr.updated) {
+
+    client.connect(ClientAddr.IP, ClientAddr.Port);
+    if (client.connected()) {
+      ClientAddr.IP.printTo(Serial);
+      Serial.println("Connected.From UDP");
+      ClientAddr.updated = false;
+      SaveClientAddr(ClientAddr);
+      return true;
+    }
+
+  }
+
+  IFClient lastClient;
+  if (LoadClientAddr(lastClient)) {
+    lastClient.IP.printTo(Serial);
+    Serial.println(lastClient.Port);
+    client.connect(lastClient.IP, lastClient.Port);
+    if (client.connected()) {
+      Serial.print("Connected.From EEPROM");
+      lastClient.IP.printTo(Serial);
+      Serial.println(lastClient.Port);
+      return true;
+    }
+
+  }
+
+  return false;
 
 }

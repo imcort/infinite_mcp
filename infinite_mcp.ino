@@ -28,38 +28,7 @@ Ticker ticker;
 
 bool ConnectFlag = 0;
 
-struct IFClient {  //存储客户端IP+端口
-  IPAddress IP;
-  uint16_t Port;
-  bool updated = false;
-} ClientAddr;
-
 DynamicJsonDocument doc;
-
-void SaveClientAddr(IFClient addr) {  //保存上次客户端地址到EEPROM
-  int address = 0;
-  EEPROM.writeUInt(address, uint32_t(addr.IP));
-  address += sizeof(uint32_t(addr.IP));
-  EEPROM.writeUShort(address, addr.Port);
-  EEPROM.commit();
-}
-
-bool LoadClientAddr(IFClient& cli) { //读取上次客户端地址到EEPROM
-  int address = 0;
-  uint32_t ip = EEPROM.readUInt(address);
-  address += sizeof(ip);
-  uint16_t port = EEPROM.readUShort(address);
-
-  if (ip & port) {
-
-    cli.IP = ip;
-    cli.Port = port;
-    return true;
-  } else {
-    return false;
-  }
-
-}
 
 void blinkLED() { //切换LED状态
   static bool WifiLedState = 0;
@@ -72,42 +41,9 @@ void configModeCallback (WiFiManager *myWiFiManager) {
   ticker.attach(0.2, blinkLED);
 }
 
-bool ConnectClient() {  //从UDP或者EEPROM连接客户端
-
-  if (ClientAddr.updated) {
-
-    client.connect(ClientAddr.IP, ClientAddr.Port);
-    if (client.connected()) {
-      ClientAddr.IP.printTo(Serial);
-      Serial.println("Connected.From UDP");
-      ClientAddr.updated = false;
-      SaveClientAddr(ClientAddr);
-      return true;
-    }
-
-  }
-
-  IFClient lastClient;
-  if (LoadClientAddr(lastClient)) {
-    lastClient.IP.printTo(Serial);
-    Serial.println(lastClient.Port);
-    client.connect(lastClient.IP, lastClient.Port);
-    if (client.connected()) {
-      Serial.print("Connected.From EEPROM");
-      lastClient.IP.printTo(Serial);
-      Serial.println(lastClient.Port);
-      return true;
-    }
-
-  }
-
-  return false;
-
-}
-
 void onData(void* obj, AsyncClient* c, void *data, size_t len) {
   if (len > 4) {
-    ParseRecivedData(doc, (uint8_t*)data, len);
+    ParseTCPRecivedData(doc, (uint8_t*)data, len);
   }
 }
 
@@ -153,30 +89,9 @@ void setup()
   if (udp.listen(ListenUdpPort)) {
     Serial.println("UDP listening");
     udp.onPacket([](AsyncUDPPacket packet) {
-
-      //Serial.write(packet.data(), packet.length());
-      auto err = deserializeJson(doc, packet.data(), packet.length());
-
-      if (err) {
-        Serial.print(F("deserializeJson() failed: "));
-        Serial.println(err.c_str());
-        return;
-      }
-
-      JsonObject obj = doc.as<JsonObject>();
-
-      JsonArray arr = obj["Addresses"];
-
-      for (int i = 0; i < arr.size(); i++) {
-
-        if (ClientAddr.IP.fromString(arr[i].as<String>())) {
-
-          ClientAddr.Port = obj["Port"];
-          ClientAddr.updated = true;
-          return;
-
-        }
-      }
+      size_t len = packet.length();
+      ParseUDPRecivedData(doc, packet.data(), len);
+      
     });
   }
   //////////////////////////////////////////////////
@@ -214,8 +129,6 @@ void loop() {
       ConnectFlag = 0;
       break;
     }
-
-    //ReceiveClientData();
 
     SendCommandToClient("Airplane.Getstate");
     delay(500);
