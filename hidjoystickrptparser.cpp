@@ -65,10 +65,10 @@ void SendCommandToClient(String Cmd/*, APICommand Cmd*/) {
   String JsonCommand;
   serializeJson(root, JsonCommand);
 
-  //Serial.println(JsonCommand);
+  Serial.println(JsonCommand);
   uint32_t strsize = JsonCommand.length();
 
-  client.write((uint8_t*)(&strsize), 4);          //size
+  client.write((char*)(&strsize), 4);          //size
   client.write(JsonCommand.c_str(), strsize);     //data
 
 }
@@ -93,7 +93,7 @@ void SendJoystickToClient(uint8_t Joyname, int16_t Joyvalue) {
   //Serial.println(JsonCommand);
   uint32_t strsize = JsonCommand.length();
 
-  client.write((uint8_t*)(&strsize), 4);          //size
+  client.write((char*)(&strsize), 4);          //size
   client.write(JsonCommand.c_str(), strsize);     //data
 
 }
@@ -120,7 +120,7 @@ void SendPOVToClient(int8_t xValue, int8_t yValue) {
   //Serial.println(JsonCommand);
   uint32_t strsize = JsonCommand.length();
 
-  client.write((uint8_t*)(&strsize), 4);          //size
+  client.write((char*)(&strsize), 4);          //size
   client.write(JsonCommand.c_str(), strsize);     //data
 
 }
@@ -141,10 +141,10 @@ void SendButtonToClient(uint8_t btnNum, bool isPress) {
   String JsonCommand;
   serializeJson(root, JsonCommand);
 
-  //Serial.println(JsonCommand);
+  Serial.println(JsonCommand);
   uint32_t strsize = JsonCommand.length();
 
-  client.write((uint8_t*)(&strsize), 4);          //size
+  client.write((char*)(&strsize), 4);          //size
   client.write(JsonCommand.c_str(), strsize);     //data
 
 }

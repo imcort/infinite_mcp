@@ -5,8 +5,9 @@
 
 #include <WiFi.h>
 #include <ArduinoJson.h>
+#include <AsyncTCP.h>
 
-extern WiFiClient client;
+extern AsyncClient client;
 extern DynamicJsonDocument doc;
 
 typedef struct{
