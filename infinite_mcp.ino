@@ -26,6 +26,8 @@ AsyncUDP udp;
 AsyncClient client;
 Ticker ticker;
 
+bool ConnectFlag = 0;
+
 struct IFClient {  //存储客户端IP+端口
   IPAddress IP;
   uint16_t Port;
@@ -74,7 +76,8 @@ bool ConnectClient() {  //从UDP或者EEPROM连接客户端
 
   if (ClientAddr.updated) {
 
-    if (client.connect(ClientAddr.IP, ClientAddr.Port)) {
+    client.connect(ClientAddr.IP, ClientAddr.Port);
+    if (client.connected()) {
       ClientAddr.IP.printTo(Serial);
       Serial.println("Connected.From UDP");
       ClientAddr.updated = false;
@@ -86,7 +89,10 @@ bool ConnectClient() {  //从UDP或者EEPROM连接客户端
 
   IFClient lastClient;
   if (LoadClientAddr(lastClient)) {
-    if (client.connect(lastClient.IP, lastClient.Port)) {
+    lastClient.IP.printTo(Serial);
+    Serial.println(lastClient.Port);
+    client.connect(lastClient.IP, lastClient.Port);
+    if (client.connected()) {
       Serial.print("Connected.From EEPROM");
       lastClient.IP.printTo(Serial);
       Serial.println(lastClient.Port);
@@ -101,12 +107,13 @@ bool ConnectClient() {  //从UDP或者EEPROM连接客户端
 
 void onData(void* obj, AsyncClient* c, void *data, size_t len) {
   if (len > 4) {
-      ParseRecivedData(doc, (uint8_t*)data, len);
+    ParseRecivedData(doc, (uint8_t*)data, len);
   }
 }
 
 void onConnect(void* obj, AsyncClient* c) {
-  Serial.println("TCP Connected..");  
+  Serial.println("TCP Connected..");
+  ConnectFlag = 1;
 }
 
 void setup()
@@ -192,7 +199,11 @@ unsigned long timer = 0;
 
 void loop() {
   digitalWrite(CONNECT_LED, 1);
-  while (!ConnectClient());
+  while (!ConnectFlag) {
+
+    ConnectClient();
+
+  }
   digitalWrite(CONNECT_LED, 0);
 
   for (;;) {
@@ -200,6 +211,7 @@ void loop() {
     //Realtime Task: Connection test
     if (!client.connected()) {
       Serial.println("disconnected.");
+      ConnectFlag = 0;
       break;
     }
 
