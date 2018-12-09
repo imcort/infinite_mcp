@@ -196,23 +196,19 @@ bool LoadClientAddr(IFClient& cli) { //读取上次客户端地址到EEPROM
 bool ConnectClient() {  //从UDP或者EEPROM连接客户端
 
   if (ClientAddr.updated) {
-    Serial.print("Connecting From UDP");
     client.connect(ClientAddr.IP, ClientAddr.Port);
     if (client.connected()) {
       ClientAddr.IP.printTo(Serial);
       Serial.println("Connected.From UDP");
       ClientAddr.updated = false;
       SaveClientAddr(ClientAddr);
-      return true;
-    }
 
+    }
+    return true;
   }
 
   IFClient lastClient;
   if (LoadClientAddr(lastClient)) {
-    Serial.print("Connecting From EEPROM");
-    lastClient.IP.printTo(Serial);
-    Serial.println(lastClient.Port);
     client.connect(lastClient.IP, lastClient.Port);
     if (client.connected()) {
       Serial.print("Connected.From EEPROM");

@@ -38,17 +38,6 @@ void configModeCallback (WiFiManager *myWiFiManager) {
   ticker.attach(0.2, blinkLED);
 }
 
-void onData(void* obj, AsyncClient* c, void *data, size_t len) {
-  if (len > 4) {
-    ParseTCPRecivedData((uint8_t*)data, len);
-  }
-}
-
-void onConnect(void* obj, AsyncClient* c) {
-  Serial.println("TCP Connected..");
-  ConnectFlag = 1;
-}
-
 void setup()
 {
   Serial.begin(2000000);
@@ -88,14 +77,21 @@ void setup()
     udp.onPacket([](AsyncUDPPacket packet) {
       size_t len = packet.length();
       ParseUDPRecivedData(packet.data(), len);
-      
+
     });
   }
   //////////////////////////////////////////////////
   Serial.println("Initalize TCP Listen");
   //////////////////////////////////////////////////
-  client.onConnect(onConnect);     //on successful connect
-  client.onData(onData);           //data received
+  client.onConnect([](void* obj, AsyncClient * c) {
+    Serial.println("TCP Connected..");
+    ConnectFlag = 1;
+  });     //on successful connect
+  client.onData([](void* obj, AsyncClient * c, void *data, size_t len) {
+    if (len > 4) {
+      ParseTCPRecivedData((uint8_t*)data, len);
+    }
+  });           //data received
   /*
     client.onConnect(onConnect);     //on successful connect
     client.onDisconnect(onDisconnect);  //disconnected
@@ -114,7 +110,7 @@ void loop() {
   while (!ConnectFlag) {
 
     ConnectClient();
-
+    delay(500);
   }
   digitalWrite(CONNECT_LED, 0);
   ticker.attach(0.2, blinkLED);
