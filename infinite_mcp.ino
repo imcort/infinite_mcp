@@ -113,7 +113,6 @@ void loop() {
     delay(500);
   }
   digitalWrite(CONNECT_LED, 0);
-  ticker.attach(0.2, blinkLED);
   for (;;) {
 
     //Realtime Task: Connection test
