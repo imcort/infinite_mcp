@@ -1,7 +1,6 @@
 #include "ifparser.h"
 
 AirplaneState CurrentAirplane;
-
 IFClient ClientAddr;
 DynamicJsonDocument doc;
 
@@ -114,21 +113,21 @@ void ParseTCPRecivedData(uint8_t* data, size_t& len) {
 
   String MsgType = root["Type"];
   if (MsgType == "Fds.IFAPI.APIAircraftState") {
-    Serial.println("Fds.IFAPI.APIAircraftState");
+    //Serial.println("Fds.IFAPI.APIAircraftState");
     APIAircraftStateParser(root);
-    serializeJsonPretty(root, Serial);
+    //serializeJsonPretty(root, Serial);
     return;
 
   } else if (MsgType == "Fds.IFAPI.APIAircraftInfo") {
-    Serial.println("Fds.IFAPI.APIAircraftInfo");
+    //Serial.println("Fds.IFAPI.APIAircraftInfo");
     APIAircraftInfoParser(root);
-    serializeJsonPretty(root, Serial);
+    //serializeJsonPretty(root, Serial);
     return;
 
   } else if (MsgType == "Fds.IFAPI.IFAPIStatus") {
-    Serial.println("Fds.IFAPI.IFAPIStatus");
+    //Serial.println("Fds.IFAPI.IFAPIStatus");
     APIDeviceInfoParser(root);
-    serializeJsonPretty(root, Serial);
+    //serializeJsonPretty(root, Serial);
     return;
 
   } else {
@@ -235,7 +234,7 @@ void SendCommandToClient(String Cmd/*, APICommand Cmd*/) {
   String JsonCommand;
   serializeJson(root, JsonCommand);
 
-  Serial.println(JsonCommand);
+  //Serial.println(JsonCommand);
   uint32_t strsize = JsonCommand.length();
 
   client.write((char*)(&strsize), 4);          //size
@@ -311,7 +310,7 @@ void SendButtonToClient(uint8_t btnNum, bool isPress) {
   String JsonCommand;
   serializeJson(root, JsonCommand);
 
-  Serial.println(JsonCommand);
+  //Serial.println(JsonCommand);
   uint32_t strsize = JsonCommand.length();
 
   client.write((char*)(&strsize), 4);          //size

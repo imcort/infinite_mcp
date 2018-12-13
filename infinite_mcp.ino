@@ -15,21 +15,27 @@
 
 #define ListenUdpPort 15000  // local port to listen on
 
-#define WIFI_LED 32
-#define CONNECT_LED 33
-#define BUTTON_PIN 26
+//#define WIFI_LED 32
+//#define CONNECT_LED 33
+//#define BUTTON_PIN 26
 
 #define EEPROM_SIZE 8
+
+#include <TM1638lite.h>
 
 AsyncUDP udp;
 AsyncClient client;
 Ticker ticker;
 
+TM1638lite tm(26, 32, 33);
+TM1638lite tm1(25, 32, 33);
+
+
 bool ConnectFlag = 0;
 
 void blinkLED() { //切换LED状态
   static bool WifiLedState = 0;
-  digitalWrite(WIFI_LED, WifiLedState);
+//  digitalWrite(WIFI_LED, WifiLedState);
   WifiLedState = !WifiLedState;
 }
 
@@ -43,12 +49,12 @@ void setup()
   Serial.begin(2000000);
   Serial.println();
 
-  pinMode(WIFI_LED, OUTPUT);
+//  pinMode(WIFI_LED, OUTPUT);
   //digitalWrite(WIFI_LED, 1);
-  ticker.attach(0.6, blinkLED);
-  pinMode(CONNECT_LED, OUTPUT);
-  digitalWrite(CONNECT_LED, 1);
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
+//  ticker.attach(0.6, blinkLED);
+//  pinMode(CONNECT_LED, OUTPUT);
+//  digitalWrite(CONNECT_LED, 1);
+//  pinMode(BUTTON_PIN, INPUT_PULLUP);
 
   //////////////////////////////////////////////////
   Serial.printf("Connecting to Wifi.");
@@ -57,7 +63,7 @@ void setup()
   wifiManager.setAPCallback(configModeCallback);
   wifiManager.autoConnect("InfiniteController");
   Serial.println("connected...yeey :)");
-  ticker.detach();
+//  ticker.detach();
 
   //////////////////////////////////////////////////
   Serial.println("Initalize EEPROM");
@@ -68,6 +74,12 @@ void setup()
     delay(1000);
     ESP.restart();
   }
+  //////////////////////////////////////////////////
+  Serial.println("Initalize LED Digit");
+  //////////////////////////////////////////////////
+
+  tm.reset();
+  tm1.reset();
 
   //////////////////////////////////////////////////
   Serial.println("Initalize UDP Listen");
@@ -106,13 +118,13 @@ void setup()
 unsigned long timer = 0;
 
 void loop() {
-  digitalWrite(CONNECT_LED, 1);
+//  digitalWrite(CONNECT_LED, 1);
   while (!ConnectFlag) {
 
     ConnectClient();
     delay(500);
   }
-  digitalWrite(CONNECT_LED, 0);
+//  digitalWrite(CONNECT_LED, 0);
   for (;;) {
 
     //Realtime Task: Connection test
@@ -128,6 +140,10 @@ void loop() {
     delay(100);
     SendCommandToClient("InfiniteFlight.GetStatus");
     delay(100);
+
+    tm.displayNumber(1, (int32_t)CurrentAirplane.Velocity);
+    tm1.displayNumber(1, (int32_t)CurrentAirplane.AltitudeLight);
+    
   }
 
 }

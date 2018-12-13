@@ -1,3 +1,6 @@
+#if !defined(__IFPARSER_H__)
+#define __IFPARSER_H__
+
 #include <ArduinoJson.h>
 #include <IPAddress.h>
 #include <Arduino.h>
@@ -6,9 +9,6 @@
 #include "EEPROM.h"
 
 #define EEPROM_SIZE 8
-
-extern AsyncClient client;
-
 
 struct AirplaneFlapsConfiguration{
 
@@ -100,7 +100,10 @@ struct IFClient {  //存储客户端IP+端口
   IPAddress IP;
   uint16_t Port;
   bool updated = false;
-} ;
+};
+
+extern AsyncClient client;
+extern AirplaneState CurrentAirplane;
 
 void APIAircraftStateParser(JsonObject& root);
 void APIAircraftInfoParser(JsonObject& root);
@@ -118,3 +121,6 @@ void SendCommandToClient(String Cmd/*, APICommand Cmd*/);
 void SendJoystickToClient(uint8_t Joyname, int16_t Joyvalue);
 void SendPOVToClient(int8_t xValue, int8_t yValue);
 void SendButtonToClient(uint8_t btnNum, bool isPress);
+
+
+#endif // __IFPARSER_H__
