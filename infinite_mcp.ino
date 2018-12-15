@@ -36,9 +36,26 @@ TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 bool ConnectFlag = 0;
 
 void blinkLED() { //切换LED状态
-  static bool WifiLedState = 0;
-//  digitalWrite(WIFI_LED, WifiLedState);
-  WifiLedState = !WifiLedState;
+  //  static bool WifiLedState = 0;
+  ////  digitalWrite(WIFI_LED, WifiLedState);
+  //  WifiLedState = !WifiLedState;
+
+  static int i = 1;
+
+  switch (i) {
+    case 1:
+      SendCommandToClient("Airplane.Getstate");
+      i++;
+      break;
+    case 2:
+      SendCommandToClient("Airplane.GetInfo");
+      i++;
+      break;
+    case 3:
+      SendCommandToClient("InfiniteFlight.GetStatus");
+      i = 1;
+      break;
+  }
 }
 
 void configModeCallback (WiFiManager *myWiFiManager) {
@@ -47,109 +64,115 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 }
 
 void RefreshLCD() {
-  
+
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.setTextDatum(TL_DATUM);
 
-  String test = "AccX";
-  tft.drawString(test+CurrentAirplane.AccelerationX, 0, 0, 2);
-  test = "AccY";
-  tft.drawString(test+CurrentAirplane.AccelerationY, 0, 15, 2);
-  test = "AccZ";
-  tft.drawString(test+CurrentAirplane.AccelerationZ, 0, 30, 2);
-  test = "AltiAGL";
-  tft.drawString(test+CurrentAirplane.AltitudeAGL, 0, 45, 2);
-  test = "AltiMSL";
-  tft.drawString(test+CurrentAirplane.AltitudeMSL, 0, 60, 2);
-  test = "AICAO";
-  tft.drawString(test+CurrentAirplane.ApproachAirportICAO, 0, 75, 2);
-  test = "ADistance";
-  tft.drawString(test+CurrentAirplane.ApproachDistance, 0, 90, 2);
-  test = "AHAngle";
-  tft.drawString(test+CurrentAirplane.ApproachHorizontalAngle, 0, 105, 2);
-  test = "ARunway";
-  tft.drawString(test+CurrentAirplane.ApproachRunway, 0, 120, 2);
-  test = "AVAngle";
-  tft.drawString(test+CurrentAirplane.ApproachVerticalAngle, 0, 135, 2);
-  test = "Bank";
-  tft.drawString(test+CurrentAirplane.Bank, 0, 150, 2);
-  test = "Course";
-  tft.drawString(test+CurrentAirplane.CourseTrue, 0, 165, 2);
-  test = "Flaps";
-  tft.drawString(test+CurrentAirplane.FlapsIndex, 0, 180, 2);
-  test = "GForce";
-  tft.drawString(test+CurrentAirplane.GForce, 0, 195, 2);
-  test = "Gear";
-  tft.drawString(test+CurrentAirplane.GearState, 0, 210, 2);
-  test = "GSpd";
-  tft.drawString(test+CurrentAirplane.GroundSpeed, 0, 225, 2);
+  int screenX = 0;
 
-  test = "GSpdK";
-  tft.drawString(test+CurrentAirplane.GroundSpeedKts, 110, 0, 2);
-  test = "HeadM";
-  tft.drawString(test+CurrentAirplane.HeadingMagnetic, 110, 15, 2);
-  test = "HeadT";
-  tft.drawString(test+CurrentAirplane.HeadingTrue, 110, 30, 2);
-  test = "IndAirspd";
-  tft.drawString(test+CurrentAirplane.IndicatedAirspeed, 110, 45, 2);
-  test = "IndAirspdK";
-  tft.drawString(test+CurrentAirplane.IndicatedAirspeedKts, 110, 60, 2);
-  test = "EngineCount";
-  tft.drawString(test+CurrentAirplane.EngineCount, 110, 75, 2);
-  test = "FlapsCount";
-  tft.drawString(test+CurrentAirplane.FlapsCount, 110, 90, 2);
-  test = "FuelTank";
-  tft.drawString(test+CurrentAirplane.FuelTankCount, 110, 105, 2);
-  test = "HasAP";
-  tft.drawString(test+CurrentAirplane.HasAutopilot, 110, 120, 2);
-  test = "AirName";
-  tft.drawString(test+CurrentAirplane.AircraftName, 110, 135, 2);
-  test = "SpoilType";
-  tft.drawString(test+CurrentAirplane.SpoilerType, 110, 150, 2);
-  test = "AppState";
-  tft.drawString(test+CurrentAirplane.AppState, 110, 165, 2);
-  test = "ApiVer";
-  tft.drawString(test+CurrentAirplane.ApiVersion, 110, 180, 2);
-  test = "DHeight";
-  tft.drawString(test+CurrentAirplane.DisplayHeight, 110, 195, 2);
-  test = "DWidth";
-  tft.drawString(test+CurrentAirplane.DisplayWidth, 110, 210, 2);
-  test = "Latitude";
-  tft.drawString(test+CurrentAirplane.Latitude, 110, 225, 2);
+  String test = "AcX:";
+  tft.drawString(test + CurrentAirplane.AccelerationX, screenX, 0, 2);
+  test = "AcY:";
+  tft.drawString(test + CurrentAirplane.AccelerationY, screenX, 15, 2);
+  test = "AcZ:";
+  tft.drawString(test + CurrentAirplane.AccelerationZ, screenX, 30, 2);
+  test = "AGL:";
+  tft.drawString(test + CurrentAirplane.AltitudeAGL, screenX, 45, 2);
+  test = "MSL:";
+  tft.drawString(test + CurrentAirplane.AltitudeMSL, screenX, 60, 2);
+  test = "ICAO:";
+  tft.drawString(test + CurrentAirplane.ApproachAirportICAO, screenX, 75, 2);
+  test = "ADST:";
+  tft.drawString(test + CurrentAirplane.ApproachDistance, screenX, 90, 2);
+  test = "AHA:";
+  tft.drawString(test + CurrentAirplane.ApproachHorizontalAngle, screenX, 105, 2);
+  test = "ARW:";
+  tft.drawString(test + CurrentAirplane.ApproachRunway, screenX, 120, 2);
+  test = "AVA:";
+  tft.drawString(test + CurrentAirplane.ApproachVerticalAngle, screenX, 135, 2);
+  test = "Bank:";
+  tft.drawString(test + CurrentAirplane.Bank, screenX, 150, 2);
+  test = "Course:";
+  tft.drawString(test + CurrentAirplane.CourseTrue, screenX, 165, 2);
+  test = "Flaps:";
+  tft.drawString(test + CurrentAirplane.FlapsIndex, screenX, 180, 2);
+  test = "GForce:";
+  tft.drawString(test + CurrentAirplane.GForce, screenX, 195, 2);
+  test = "Gear:";
+  tft.drawString(test + CurrentAirplane.GearState, screenX, 210, 2);
+  test = "GSpd:";
+  tft.drawString(test + CurrentAirplane.GroundSpeed, screenX, 225, 2);
 
-  test = "Longitude";
-  tft.drawString(test+CurrentAirplane.Longitude, 220, 0, 2);
-  test = "MachNumber";
-  tft.drawString(test+CurrentAirplane.MachNumber, 220, 15, 2);
-  test = "MagneticDeviation";
-  tft.drawString(test+CurrentAirplane.MagneticDeviation, 220, 30, 2);
-  test = "Pitch";
-  tft.drawString(test+CurrentAirplane.Pitch, 220, 45, 2);
-  test = "ReverseThrustState";
-  tft.drawString(test+CurrentAirplane.ReverseThrustState, 220, 60, 2);
-  test = "SideForce";
-  tft.drawString(test+CurrentAirplane.SideForce, 220, 75, 2);
-  test = "SpoilersPosition";
-  tft.drawString(test+CurrentAirplane.SpoilersPosition, 220, 90, 2);
-  test = "StallProximity";
-  tft.drawString(test+CurrentAirplane.StallProximity, 220, 105, 2);
-  test = "StallWarning";
-  tft.drawString(test+CurrentAirplane.StallWarning, 220, 120, 2);
-  test = "Stalling";
-  tft.drawString(test+CurrentAirplane.Stalling, 220, 135, 2);
-  test = "TrueAirspeed";
-  tft.drawString(test+CurrentAirplane.TrueAirspeed, 220, 150, 2);
-  test = "Velocity";
-  tft.drawString(test+CurrentAirplane.Velocity, 220, 165, 2);
-  test = "VerticalSpeed";
-  tft.drawString(test+CurrentAirplane.VerticalSpeed, 220, 180, 2);
-  test = "Weight";
-  tft.drawString(test+CurrentAirplane.Weight, 220, 195, 2);
-  test = "WeightPercentage";
-  tft.drawString(test+CurrentAirplane.WeightPercentage, 220, 210, 2);
-  test = "DeviceName";
-  tft.drawString(test+CurrentAirplane.DeviceName, 220, 225, 2);
+  screenX = 100;
+
+  test = "GSpdK:";
+  tft.drawString(test + CurrentAirplane.GroundSpeedKts, screenX, 0, 2);
+  test = "HeadM:";
+  tft.drawString(test + CurrentAirplane.HeadingMagnetic, screenX, 15, 2);
+  test = "HeadT:";
+  tft.drawString(test + CurrentAirplane.HeadingTrue, screenX, 30, 2);
+  test = "IndAirspd:";
+  tft.drawString(test + CurrentAirplane.IndicatedAirspeed, screenX, 45, 2);
+  test = "IndAirspdK:";
+  tft.drawString(test + CurrentAirplane.IndicatedAirspeedKts, screenX, 60, 2);
+  test = "EngineCount:";
+  tft.drawString(test + CurrentAirplane.EngineCount, screenX, 75, 2);
+  test = "FlapsCount:";
+  tft.drawString(test + CurrentAirplane.FlapsCount, screenX, 90, 2);
+  test = "FuelTank:";
+  tft.drawString(test + CurrentAirplane.FuelTankCount, screenX, 105, 2);
+  test = "HasAP:";
+  tft.drawString(test + CurrentAirplane.HasAutopilot, screenX, 120, 2);
+  test = "";
+  tft.drawString(test + CurrentAirplane.AircraftName, screenX, 135, 2);
+  test = "SpoilType:";
+  tft.drawString(test + CurrentAirplane.SpoilerType, screenX, 150, 2);
+  test = "AppState:";
+  tft.drawString(test + CurrentAirplane.AppState, screenX, 165, 2);
+  test = "ApiVer:";
+  tft.drawString(test + CurrentAirplane.ApiVersion, screenX, 180, 2);
+  test = "DHeight:";
+  tft.drawString(test + CurrentAirplane.DisplayHeight, screenX, 195, 2);
+  test = "DWidth:";
+  tft.drawString(test + CurrentAirplane.DisplayWidth, screenX, 210, 2);
+  test = "Lat:";
+  tft.drawString(test + CurrentAirplane.Latitude, screenX, 225, 2);
+
+  screenX = 220;
+
+  test = "Lon:";
+  tft.drawString(test + CurrentAirplane.Longitude, screenX, 0, 2);
+  test = "Mach:";
+  tft.drawString(test + CurrentAirplane.MachNumber, screenX, 15, 2);
+  test = "MD:";
+  tft.drawString(test + CurrentAirplane.MagneticDeviation, screenX, 30, 2);
+  test = "Pitch:";
+  tft.drawString(test + CurrentAirplane.Pitch, screenX, 45, 2);
+  test = "RTS:";
+  tft.drawString(test + CurrentAirplane.ReverseThrustState, screenX, 60, 2);
+  test = "SFe:";
+  tft.drawString(test + CurrentAirplane.SideForce, screenX, 75, 2);
+  test = "SpP:";
+  tft.drawString(test + CurrentAirplane.SpoilersPosition, screenX, 90, 2);
+  test = "StallP:";
+  tft.drawString(test + CurrentAirplane.StallProximity, screenX, 105, 2);
+  test = "StallW:";
+  tft.drawString(test + CurrentAirplane.StallWarning, screenX, 120, 2);
+  test = "Stall:";
+  tft.drawString(test + CurrentAirplane.Stalling, screenX, 135, 2);
+  test = "TAs:";
+  tft.drawString(test + CurrentAirplane.TrueAirspeed, screenX, 150, 2);
+  test = "Spd:";
+  tft.drawString(test + CurrentAirplane.Velocity, screenX, 165, 2);
+  test = "Vs:";
+  tft.drawString(test + CurrentAirplane.VerticalSpeed, screenX, 180, 2);
+  test = "WEI:";
+  tft.drawString(test + CurrentAirplane.Weight, screenX, 195, 2);
+  test = "WPG:";
+  tft.drawString(test + CurrentAirplane.WeightPercentage, screenX, 210, 2);
+  test = "DNm:";
+  tft.drawString(test + CurrentAirplane.DeviceName, screenX, 225, 2);
 
 }
 
@@ -158,12 +181,12 @@ void setup()
   Serial.begin(2000000);
   Serial.println();
 
-//  pinMode(WIFI_LED, OUTPUT);
+  //  pinMode(WIFI_LED, OUTPUT);
   //digitalWrite(WIFI_LED, 1);
-//  ticker.attach(0.6, blinkLED);
-//  pinMode(CONNECT_LED, OUTPUT);
-//  digitalWrite(CONNECT_LED, 1);
-//  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  //  ticker.attach(0.6, blinkLED);
+  //  pinMode(CONNECT_LED, OUTPUT);
+  //  digitalWrite(CONNECT_LED, 1);
+  //  pinMode(BUTTON_PIN, INPUT_PULLUP);
 
   //////////////////////////////////////////////////
   Serial.printf("Connecting to Wifi.");
@@ -172,7 +195,7 @@ void setup()
   wifiManager.setAPCallback(configModeCallback);
   wifiManager.autoConnect("InfiniteController");
   Serial.println("connected...yeey :)");
-//  ticker.detach();
+  //  ticker.detach();
 
   //////////////////////////////////////////////////
   Serial.println("Initalize EEPROM");
@@ -237,34 +260,35 @@ void setup()
 unsigned long timer = 0;
 
 void loop() {
-//  digitalWrite(CONNECT_LED, 1);
+  //  digitalWrite(CONNECT_LED, 1);
   while (!ConnectFlag) {
 
     ConnectClient();
     delay(500);
   }
-//  digitalWrite(CONNECT_LED, 0);
+  ticker.attach(0.1, blinkLED);
+  //  digitalWrite(CONNECT_LED, 0);
   for (;;) {
 
     //Realtime Task: Connection test
     if (!client.connected()) {
       Serial.println("disconnected.");
       ConnectFlag = 0;
+      ticker.detach();
       break;
     }
 
-    SendCommandToClient("Airplane.Getstate");
-    delay(100);
-    SendCommandToClient("Airplane.GetInfo");
-    delay(100);
-    SendCommandToClient("InfiniteFlight.GetStatus");
-    delay(100);
+
+
+    
 
     tm.displayNumber(1, (int32_t)CurrentAirplane.Velocity);
     tm1.displayNumber(1, (int32_t)CurrentAirplane.AltitudeLight);
 
     RefreshLCD();
-    
+
+    delay(100);
+
   }
 
 }
