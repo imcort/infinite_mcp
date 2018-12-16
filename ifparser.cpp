@@ -1,7 +1,7 @@
 #include "ifparser.h"
 
 AirplaneState CurrentAirplane;
-IFClient ClientAddr;
+//IFClient ClientAddr;
 DynamicJsonDocument doc;
 
 void APIAircraftStateParser(JsonObject& root) {

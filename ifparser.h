@@ -96,11 +96,11 @@ struct AirplaneState{
 
 };
 
-struct IFClient {  //存储客户端IP+端口
-  IPAddress IP;
-  uint16_t Port;
-  bool updated = false;
-};
+//struct IFClient {  //存储客户端IP+端口
+//  IPAddress IP;
+//  uint16_t Port;
+//  bool updated = false;
+//};
 
 extern AsyncClient client;
 extern AirplaneState CurrentAirplane;
