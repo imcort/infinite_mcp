@@ -84,7 +84,7 @@ struct AirplaneState{
 
     //DeviceInfo
     IPAddress ClientAddress;
-    int ClientPort;
+    uint16_t ClientPort;
     String ApiVersion;
     String AppState;
     String AppVersion;
@@ -112,8 +112,8 @@ void APIDeviceInfoParser(JsonObject& root);
 void ParseTCPRecivedData(uint8_t* data, size_t& len);
 void ParseUDPRecivedData(uint8_t* data, size_t& len);
 
-void SaveClientAddr(IFClient addr);
-bool LoadClientAddr(IFClient& cli);
+void SaveClientAddr(IPAddress _ip, uint16_t _port);
+bool LoadClientAddr(IPAddress& _ip, uint16_t& _port);
 
 bool ConnectClient();
 

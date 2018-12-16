@@ -217,6 +217,10 @@ void setup()
     delay(1000);
     ESP.restart();
   }
+  LoadClientAddr(CurrentAirplane.ClientAddress, CurrentAirplane.ClientPort);
+      //Load Last client address EEPROM -> CurrentAirplane
+
+  
   //////////////////////////////////////////////////
   Serial.println("Initalize LED Digit");
   //////////////////////////////////////////////////
@@ -259,6 +263,7 @@ void setup()
   client.onConnect([](void* obj, AsyncClient * c) {
     Serial.println("TCP Connected..");
     ConnectFlag = 1;
+    SaveClientAddr(CurrentAirplane.ClientAddress, CurrentAirplane.ClientPort);
   });     //on successful connect
   client.onData([](void* obj, AsyncClient * c, void *data, size_t len) {
     if (len > 4) {
@@ -268,7 +273,7 @@ void setup()
   client.onDisconnect([](void* obj, AsyncClient * c) {
     ConnectFlag = 0;
     ticker.detach();
-    Serial.print("onDisconnect");
+    //Serial.print("onDisconnect");
   });
   /*
     client.onConnect(onConnect);     //on successful connect

@@ -107,7 +107,7 @@ void ParseTCPRecivedData(uint8_t* data, size_t& len) {
   if (error) {
     Serial.print(F("###Json Parser Failed: "));
     Serial.println(error.c_str());
-    Serial.write(data,len);
+    Serial.write(data, len);
     Serial.println();
     return;
   }
@@ -159,10 +159,9 @@ void ParseUDPRecivedData(uint8_t* data, size_t& len) {
 
   for (int i = 0; i < arr.size(); i++) {
 
-    if (ClientAddr.IP.fromString(arr[i].as<String>())) {
+    if (CurrentAirplane.ClientAddress.fromString(arr[i].as<String>())) {
 
-      ClientAddr.Port = obj["Port"];
-      ClientAddr.updated = true;
+      CurrentAirplane.ClientPort = obj["Port"];
       return;
 
     }
@@ -170,15 +169,16 @@ void ParseUDPRecivedData(uint8_t* data, size_t& len) {
 
 }
 
-void SaveClientAddr(IFClient addr) {  //保存上次客户端地址到EEPROM
+void SaveClientAddr(IPAddress _ip, uint16_t _port) {  //保存上次客户端地址到EEPROM
   int address = 0;
-  EEPROM.writeUInt(address, uint32_t(addr.IP));
-  address += sizeof(uint32_t(addr.IP));
-  EEPROM.writeUShort(address, addr.Port);
+  EEPROM.writeUInt(address, uint32_t(_ip));
+  address += sizeof(uint32_t(_ip));
+  EEPROM.writeUShort(address, _port);
   EEPROM.commit();
 }
 
-bool LoadClientAddr(IFClient& cli) { //读取上次客户端地址到EEPROM
+bool LoadClientAddr(IPAddress& _ip, uint16_t& _port) { //读取上次客户端地址到EEPROM
+
   int address = 0;
   uint32_t ip = EEPROM.readUInt(address);
   address += sizeof(ip);
@@ -186,8 +186,9 @@ bool LoadClientAddr(IFClient& cli) { //读取上次客户端地址到EEPROM
 
   if (ip & port) {
 
-    cli.IP = ip;
-    cli.Port = port;
+    _ip = ip;
+    _port = port;
+
     return true;
   } else {
     return false;
@@ -197,33 +198,31 @@ bool LoadClientAddr(IFClient& cli) { //读取上次客户端地址到EEPROM
 
 bool ConnectClient() {  //从UDP或者EEPROM连接客户端
 
-  if (ClientAddr.updated) {
-    client.connect(ClientAddr.IP, ClientAddr.Port);
-    if (client.connected()) {
-      ClientAddr.IP.printTo(Serial);
-      Serial.println("Connected.From UDP");
-      ClientAddr.updated = false;
-      SaveClientAddr(ClientAddr);
-
-    }
+  client.connect(CurrentAirplane.ClientAddress, CurrentAirplane.ClientPort);
+  if (client.connected()) {
+    CurrentAirplane.ClientAddress.printTo(Serial);
     return true;
+  } else {
+    return false;
   }
-
-  IFClient lastClient;
-  if (LoadClientAddr(lastClient)) {
-    client.connect(lastClient.IP, lastClient.Port);
-    if (client.connected()) {
-      Serial.print("Connected.From EEPROM");
-      lastClient.IP.printTo(Serial);
-      Serial.println(lastClient.Port);
-      return true;
-    }
-
-  }
-
-  return false;
 
 }
+//
+//  IFClient lastClient;
+//  if (LoadClientAddr(lastClient)) {
+//    client.connect(lastClient.IP, lastClient.Port);
+//    if (client.connected()) {
+//      Serial.print("Connected.From EEPROM");
+//      lastClient.IP.printTo(Serial);
+//      Serial.println(lastClient.Port);
+//      return true;
+//    }
+//
+//  }
+//
+//  return false;
+//
+//}
 
 void SendCommandToClient(String Cmd/*, APICommand Cmd*/) {
 
