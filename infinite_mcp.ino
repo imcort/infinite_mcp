@@ -26,7 +26,7 @@
 
 AsyncUDP udp;
 AsyncClient client;
-Ticker ticker;
+Ticker SendCommandTicker, MakeConnectTicker;
 
 TM1638lite tm(26, 32, 33);
 TM1638lite tm1(25, 32, 33);
@@ -35,12 +35,9 @@ TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
 TaskHandle_t Task1;
 
-bool ConnectFlag = 0;
+//bool ConnectFlag = 0;
 
-void blinkLED() { //切换LED状态
-  //  static bool WifiLedState = 0;
-  ////  digitalWrite(WIFI_LED, WifiLedState);
-  //  WifiLedState = !WifiLedState;
+void SendCommandTask() { //切换LED状态
 
   static int i = 1;
 
@@ -60,9 +57,16 @@ void blinkLED() { //切换LED状态
   }
 }
 
+void MakeConnectTask() {
+
+  Serial.println("connecting");
+  ConnectClient();
+
+}
+
 void configModeCallback (WiFiManager *myWiFiManager) {
 
-  ticker.attach(0.2, blinkLED);
+  //ticker.attach(0.2, blinkLED);
 }
 
 void RefreshLCD() {
@@ -192,12 +196,6 @@ void setup()
 {
   Serial.begin(2000000);
   Serial.println();
-  //  pinMode(WIFI_LED, OUTPUT);
-  //digitalWrite(WIFI_LED, 1);
-  //  ticker.attach(0.6, blinkLED);
-  //  pinMode(CONNECT_LED, OUTPUT);
-  //  digitalWrite(CONNECT_LED, 1);
-  //  pinMode(BUTTON_PIN, INPUT_PULLUP);
 
   //////////////////////////////////////////////////
   Serial.printf("Connecting to Wifi.");
@@ -206,7 +204,6 @@ void setup()
   wifiManager.setAPCallback(configModeCallback);
   wifiManager.autoConnect("InfiniteController");
   Serial.println("connected...yeey :)");
-  //  ticker.detach();
 
   //////////////////////////////////////////////////
   Serial.println("Initalize EEPROM");
@@ -218,9 +215,9 @@ void setup()
     ESP.restart();
   }
   LoadClientAddr(CurrentAirplane.ClientAddress, CurrentAirplane.ClientPort);
-      //Load Last client address EEPROM -> CurrentAirplane
+  //Load Last client address EEPROM -> CurrentAirplane
 
-  
+
   //////////////////////////////////////////////////
   Serial.println("Initalize LED Digit");
   //////////////////////////////////////////////////
@@ -261,20 +258,30 @@ void setup()
   Serial.println("Initalize TCP Listen");
   //////////////////////////////////////////////////
   client.onConnect([](void* obj, AsyncClient * c) {
+
     Serial.println("TCP Connected..");
-    ConnectFlag = 1;
+    MakeConnectTicker.detach();
+    SendCommandTicker.attach(0.1, SendCommandTask);
+    //ConnectFlag = 1;
     SaveClientAddr(CurrentAirplane.ClientAddress, CurrentAirplane.ClientPort);
+
   });     //on successful connect
   client.onData([](void* obj, AsyncClient * c, void *data, size_t len) {
+
     if (len > 4) {
       ParseTCPRecivedData((uint8_t*)data, len);
     }
+
   });           //data received
   client.onDisconnect([](void* obj, AsyncClient * c) {
-    ConnectFlag = 0;
-    ticker.detach();
-    //Serial.print("onDisconnect");
+
+    //ConnectFlag = 0;
+    SendCommandTicker.detach();
+    MakeConnectTicker.attach(0.5, MakeConnectTask);
+    Serial.print("onDisconnect");
+
   });
+  MakeConnectTicker.attach(0.5, MakeConnectTask);
   /*
     client.onConnect(onConnect);     //on successful connect
     client.onDisconnect(onDisconnect);  //disconnected
@@ -286,24 +293,25 @@ void setup()
   */
 }
 
-unsigned long timer = 0;
+//unsigned long timer = 0;
 
 void loop() {
-  //  digitalWrite(CONNECT_LED, 1);
-  while (!ConnectFlag) {
 
-    ConnectClient();
-    delay(500);
-  }
-  ticker.attach(0.1, blinkLED);
-  //  digitalWrite(CONNECT_LED, 0);
-  for (;;) {
-
-    //Realtime Task: Connection test
-    if (!ConnectFlag) {
-      break;
-    }
-
-  }
+  //  while (!ConnectFlag) {
+  //
+  //    ConnectClient();
+  //
+  //    delay(500);
+  //  }
+  //
+  //
+  //  for (;;) {
+  //
+  //    //Realtime Task: Connection test
+  //    if (!ConnectFlag) {
+  //      break;
+  //    }
+  //
+  //  }
 
 }
