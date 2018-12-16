@@ -265,11 +265,11 @@ void setup()
       ParseTCPRecivedData((uint8_t*)data, len);
     }
   });           //data received
-  client.onDisconnect(void* obj, AsyncClient * c) {
+  client.onDisconnect([](void* obj, AsyncClient * c) {
     ConnectFlag = 0;
     ticker.detach();
     Serial.print("onDisconnect");
-  }
+  });
   /*
     client.onConnect(onConnect);     //on successful connect
     client.onDisconnect(onDisconnect);  //disconnected
