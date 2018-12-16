@@ -100,12 +100,15 @@ void APIDeviceInfoParser(JsonObject& root) {
 
 void ParseTCPRecivedData(uint8_t* data, size_t& len) {
 
-  doc.clear();
+  //doc.clear();
+  DynamicJsonDocument doc;
   DeserializationError error = deserializeJson(doc, data, len);
 
   if (error) {
     Serial.print(F("###Json Parser Failed: "));
     Serial.println(error.c_str());
+    Serial.write(data,len);
+    Serial.println();
     return;
   }
 
