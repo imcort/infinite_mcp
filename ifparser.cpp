@@ -1,7 +1,6 @@
 #include "ifparser.h"
 
 AirplaneState CurrentAirplane;
-//IFClient ClientAddr;
 DynamicJsonDocument doc;
 
 void APIAircraftStateParser(JsonObject& root) {
@@ -207,22 +206,6 @@ bool ConnectClient() {  //从UDP或者EEPROM连接客户端
   }
 
 }
-//
-//  IFClient lastClient;
-//  if (LoadClientAddr(lastClient)) {
-//    client.connect(lastClient.IP, lastClient.Port);
-//    if (client.connected()) {
-//      Serial.print("Connected.From EEPROM");
-//      lastClient.IP.printTo(Serial);
-//      Serial.println(lastClient.Port);
-//      return true;
-//    }
-//
-//  }
-//
-//  return false;
-//
-//}
 
 void SendCommandToClient(String Cmd/*, APICommand Cmd*/) {
 

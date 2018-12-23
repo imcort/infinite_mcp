@@ -237,7 +237,7 @@ void setup()
 
   xTaskCreate(
     codeForTask1,            /* Task function. */
-    "Task_1",                 /* name of task. */
+    "RefreshLCDTask",                 /* name of task. */
     10000,                    /* Stack size of task */
     NULL,                     /* parameter of the task */
     1,                        /* priority of the task */
@@ -262,7 +262,6 @@ void setup()
     Serial.println("TCP Connected..");
     MakeConnectTicker.detach();
     SendCommandTicker.attach(0.1, SendCommandTask);
-    //ConnectFlag = 1;
     SaveClientAddr(CurrentAirplane.ClientAddress, CurrentAirplane.ClientPort);
 
   });     //on successful connect
@@ -275,7 +274,6 @@ void setup()
   });           //data received
   client.onDisconnect([](void* obj, AsyncClient * c) {
 
-    //ConnectFlag = 0;
     SendCommandTicker.detach();
     MakeConnectTicker.attach(0.5, MakeConnectTask);
     Serial.print("onDisconnect");
@@ -293,25 +291,8 @@ void setup()
   */
 }
 
-//unsigned long timer = 0;
-
 void loop() {
 
-  //  while (!ConnectFlag) {
-  //
-  //    ConnectClient();
-  //
-  //    delay(500);
-  //  }
-  //
-  //
-  //  for (;;) {
-  //
-  //    //Realtime Task: Connection test
-  //    if (!ConnectFlag) {
-  //      break;
-  //    }
-  //
-  //  }
+
 
 }
