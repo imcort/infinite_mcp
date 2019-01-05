@@ -84,7 +84,7 @@ void blinkWiFiLED() {
 void configModeCallback (WiFiManager *myWiFiManager) {
 
   LEDBlinkTicker.attach(0.2, blinkWiFiLED);
-  
+
 }
 
 //void RefreshLCD() {
@@ -203,10 +203,10 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 void codeForTask1( void * parameter )
 {
   for (;;) {
-//    tm.displayNumber(1, (int32_t)CurrentAirplane.Velocity);
-//    tm1.displayNumber(1, (int32_t)CurrentAirplane.AltitudeLight);
-//
-//    RefreshLCD();                      // wait for a second
+    //    tm.displayNumber(1, (int32_t)CurrentAirplane.Velocity);
+    //    tm1.displayNumber(1, (int32_t)CurrentAirplane.AltitudeLight);
+    //
+    //    RefreshLCD();                      // wait for a second
   }
 }
 
@@ -218,11 +218,12 @@ void setup()
   Serial.printf("LED Mode Set.");
   //////////////////////////////////////////////////
   pinMode(WIFI_LED, OUTPUT);
+  digitalWrite(WIFI_LED, 1);  //CLOSE
   LEDBlinkTicker.attach(0.6, blinkWiFiLED); //Slow Flash
-  
+
   pinMode(CONNECT_LED, OUTPUT);
   digitalWrite(CONNECT_LED, 1);  //CLOSE
-  
+
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
   //////////////////////////////////////////////////
@@ -234,7 +235,7 @@ void setup()
   Serial.println("connected...yeey :)");
   LEDBlinkTicker.detach();
   digitalWrite(WIFI_LED, 0); //LightOn
-  
+
   //////////////////////////////////////////////////
   Serial.println("Initalize EEPROM");
   //////////////////////////////////////////////////
@@ -308,15 +309,15 @@ void setup()
     SaveClientAddr(CurrentAirplane.ClientAddress, CurrentAirplane.ClientPort);
 
   });     //on successful connect
-//  client.onData([](void* obj, AsyncClient * c, void *data, size_t len) {
-//
-//    if (len > 4) {
-//      ParseTCPRecivedData((uint8_t*)data, len);
-//    }
-//
-//  });           //data received
+  //  client.onData([](void* obj, AsyncClient * c, void *data, size_t len) {
+  //
+  //    if (len > 4) {
+  //      ParseTCPRecivedData((uint8_t*)data, len);
+  //    }
+  //
+  //  });           //data received
   client.onDisconnect([](void* obj, AsyncClient * c) {
-    
+
     digitalWrite(CONNECT_LED, 1);
     //SendCommandTicker.detach();
     MakeConnectTicker.attach(0.5, MakeConnectTask);
@@ -338,5 +339,7 @@ void setup()
 void loop() {
 
   Usb.Task();
+  if (digitalRead(BUTTON_PIN) == LOW)
+    ESP.restart();
 
 }
