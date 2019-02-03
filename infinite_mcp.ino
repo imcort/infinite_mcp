@@ -1,11 +1,18 @@
+/*
+ * Dependencies:
+ * AsyncTCP:https://github.com/me-no-dev/AsyncTCP
+ * MCPanel:
+ * PCF8575:
+ * TFT_eSPI:
+ * WiFiManager-development:
+ * ArduinoJson 6.8.0-beta:
+ */
+
 #include <WiFi.h>
 #include "AsyncUDP.h"
 #include <AsyncTCP.h>
 #include <DNSServer.h>
-//#include <ESP8266WebServer.h>
 #include <WiFiManager.h>
-
-//#include <ArduinoJson.h>
 
 #include <SPI.h>
 #include "EEPROM.h"
@@ -15,13 +22,8 @@
 
 #define ListenUdpPort 15000  // local port to listen on
 
-//#define WIFI_LED 32
-//#define CONNECT_LED 33
-//#define BUTTON_PIN 26
-
 #define EEPROM_SIZE 8
 
-//#include <TM1638lite.h>
 #include <TFT_eSPI.h> // Hardware-specific library
 
 #include <MCPanel.h>
@@ -33,14 +35,9 @@ Ticker SendCommandTicker, MakeConnectTicker;
 
 MCPanel mcp;
 
-//TM1638lite tm(26, 32, 33);
-//TM1638lite tm1(25, 32, 33);
-
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
 TaskHandle_t Task1;
-
-//bool ConnectFlag = 0;
 
 void SendCommandTask() { //切换LED状态
 
@@ -71,12 +68,11 @@ void MakeConnectTask() {
 
 void configModeCallback (WiFiManager *myWiFiManager) {
 
-  //ticker.attach(0.2, blinkLED);
 }
 
 void RefreshLCD() {
 
-  //tft.fillScreen(TFT_BLACK);
+  tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.setTextDatum(TL_DATUM);
 
@@ -191,10 +187,10 @@ void codeForTask1( void * parameter )
 {
 
   for (;;) {
-    Wire.setClock(800000);
-    mcp.displayNumber((int16_t)CurrentAirplane.AltitudeMSL, (int16_t)CurrentAirplane.IndicatedAirspeedKts, (int16_t)(CurrentAirplane.VerticalSpeed * 196.85), (int16_t)CurrentAirplane.HeadingMagnetic);
-    Serial.println(CurrentAirplane.VerticalSpeed);
-
+    mcp.displayNumber((int16_t)CurrentAirplane.AltitudeMSL, 
+                      (int16_t)CurrentAirplane.IndicatedAirspeedKts, 
+                      (int16_t)(CurrentAirplane.VerticalSpeed * 196.85), 
+                      (int16_t)CurrentAirplane.HeadingMagnetic);
     RefreshLCD();
   }
 }
