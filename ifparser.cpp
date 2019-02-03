@@ -1,7 +1,7 @@
 #include "ifparser.h"
 
 AirplaneState CurrentAirplane;
-DynamicJsonDocument doc;
+DynamicJsonDocument doc(2048);
 
 void APIAircraftStateParser(JsonObject& root) {
 
@@ -100,7 +100,7 @@ void APIDeviceInfoParser(JsonObject& root) {
 void ParseTCPRecivedData(uint8_t* data, size_t& len) {
 
   //doc.clear();
-  DynamicJsonDocument doc;
+  DynamicJsonDocument doc(2048);
   DeserializationError error = deserializeJson(doc, data, len);
 
   if (error) {

@@ -2,7 +2,7 @@
 #include "AsyncUDP.h"
 #include <AsyncTCP.h>
 #include <DNSServer.h>
-#include <ESP8266WebServer.h>
+//#include <ESP8266WebServer.h>
 #include <WiFiManager.h>
 
 //#include <ArduinoJson.h>
@@ -192,10 +192,10 @@ void codeForTask1( void * parameter )
 
   for (;;) {
     Wire.setClock(800000);
-    mcp.displayNumber((int16_t)CurrentAirplane.AltitudeMSL, (int16_t)CurrentAirplane.IndicatedAirspeedKts, (int16_t)(CurrentAirplane.VerticalSpeed*196.85), (int16_t)CurrentAirplane.HeadingMagnetic);
+    mcp.displayNumber((int16_t)CurrentAirplane.AltitudeMSL, (int16_t)CurrentAirplane.IndicatedAirspeedKts, (int16_t)(CurrentAirplane.VerticalSpeed * 196.85), (int16_t)CurrentAirplane.HeadingMagnetic);
     Serial.println(CurrentAirplane.VerticalSpeed);
 
-    RefreshLCD();   
+    RefreshLCD();
   }
 }
 
@@ -229,7 +229,7 @@ void setup()
   //////////////////////////////////////////////////
 
   mcp.begin();
-  
+
   //////////////////////////////////////////////////
   Serial.println("Initalize LCD");
   //////////////////////////////////////////////////
@@ -247,7 +247,7 @@ void setup()
     NULL,                     /* parameter of the task */
     1,                        /* priority of the task */
     &Task1,                   /* Task handle to keep track of created task */
-    1);                   
+    1);
 
   //////////////////////////////////////////////////
   Serial.println("Initalize UDP Listen");
@@ -299,6 +299,6 @@ void setup()
 
 void loop() {
 
-
+  delay(1000);
 
 }
