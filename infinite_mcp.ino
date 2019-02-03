@@ -37,7 +37,7 @@ MCPanel mcp;
 
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
-TaskHandle_t Task1;
+TaskHandle_t Task1,Task2;
 
 void SendCommandTask() { //切换LED状态
 
@@ -72,7 +72,7 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 
 void RefreshLCD() {
 
-  tft.fillScreen(TFT_BLACK);
+  //tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.setTextDatum(TL_DATUM);
 
@@ -182,16 +182,43 @@ void RefreshLCD() {
   tft.drawString(test + CurrentAirplane.DeviceName, screenX, 225, 2);
 
 }
+void func1(uint8_t i) {
+  Serial.print("Key Pressed:");
+  Serial.println(i + 1);
+  mcp.displayNumber(i + 1, 350, -1000, 10);
+}
+
+void func2(uint8_t i) {
+  Serial.print("Key Released:");
+  Serial.println(i + 1);
+  mcp.displayNumber(i + 1, 350, -1000, 10);
+}
+
+void func3(uint8_t i, int j) {
+  Serial.print("Encoder ");
+  Serial.print(i);
+  Serial.print(" Changed:");
+  Serial.println(j);
+  mcp.displayNumber(j, 350, -1000, 10);
+}
 
 void codeForTask1( void * parameter )
 {
+  for (;;) {
+    RefreshLCD();
+  }
+}
+
+void codeForTask2( void * parameter )
+{
 
   for (;;) {
-    mcp.displayNumber((int16_t)CurrentAirplane.AltitudeMSL, 
-                      (int16_t)CurrentAirplane.IndicatedAirspeedKts, 
-                      (int16_t)(CurrentAirplane.VerticalSpeed * 196.85), 
-                      (int16_t)CurrentAirplane.HeadingMagnetic);
-    RefreshLCD();
+    //mcp.displayNumber((int16_t)CurrentAirplane.AltitudeMSL, 
+    //                  (int16_t)CurrentAirplane.IndicatedAirspeedKts, 
+    //                  (int16_t)(CurrentAirplane.VerticalSpeed * 196.85), 
+    //                  (int16_t)CurrentAirplane.HeadingMagnetic);
+     mcp.changeCallbackFunc(func2, func1, func3);
+    
   }
 }
 
@@ -225,6 +252,14 @@ void setup()
   //////////////////////////////////////////////////
 
   mcp.begin();
+  xTaskCreatePinnedToCore(
+    codeForTask2,            /* Task function. */
+    "MCPTask",                 /* name of task. */
+    5000,                    /* Stack size of task */
+    NULL,                     /* parameter of the task */
+    2,                        /* priority of the task */
+    &Task2,                   /* Task handle to keep track of created task */
+    1);
 
   //////////////////////////////////////////////////
   Serial.println("Initalize LCD");
@@ -239,7 +274,7 @@ void setup()
   xTaskCreatePinnedToCore(
     codeForTask1,            /* Task function. */
     "RefreshLCDTask",                 /* name of task. */
-    10000,                    /* Stack size of task */
+    5000,                    /* Stack size of task */
     NULL,                     /* parameter of the task */
     1,                        /* priority of the task */
     &Task1,                   /* Task handle to keep track of created task */
@@ -294,7 +329,7 @@ void setup()
 }
 
 void loop() {
-
-  delay(1000);
+ 
+ delay(1000);
 
 }
