@@ -21,15 +21,20 @@
 
 #define EEPROM_SIZE 8
 
-#include <TM1638lite.h>
+//#include <TM1638lite.h>
 #include <TFT_eSPI.h> // Hardware-specific library
+
+#include <MCPanel.h>
+#include "Wire.h"
 
 AsyncUDP udp;
 AsyncClient client;
 Ticker SendCommandTicker, MakeConnectTicker;
 
-TM1638lite tm(26, 32, 33);
-TM1638lite tm1(25, 32, 33);
+MCPanel mcp;
+
+//TM1638lite tm(26, 32, 33);
+//TM1638lite tm1(25, 32, 33);
 
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
@@ -184,11 +189,13 @@ void RefreshLCD() {
 
 void codeForTask1( void * parameter )
 {
-  for (;;) {
-    tm.displayNumber(1, (int32_t)CurrentAirplane.Velocity);
-    tm1.displayNumber(1, (int32_t)CurrentAirplane.AltitudeLight);
 
-    RefreshLCD();                      // wait for a second
+  for (;;) {
+    Wire.setClock(800000);
+    mcp.displayNumber((int16_t)CurrentAirplane.AltitudeMSL, (int16_t)CurrentAirplane.IndicatedAirspeedKts, (int16_t)(CurrentAirplane.VerticalSpeed*196.85), (int16_t)CurrentAirplane.HeadingMagnetic);
+    Serial.println(CurrentAirplane.VerticalSpeed);
+
+    RefreshLCD();   
   }
 }
 
@@ -217,31 +224,30 @@ void setup()
   LoadClientAddr(CurrentAirplane.ClientAddress, CurrentAirplane.ClientPort);
   //Load Last client address EEPROM -> CurrentAirplane
 
-
   //////////////////////////////////////////////////
   Serial.println("Initalize LED Digit");
   //////////////////////////////////////////////////
 
-  tm.reset();
-  tm1.reset();
-
+  mcp.begin();
+  
   //////////////////////////////////////////////////
   Serial.println("Initalize LCD");
   //////////////////////////////////////////////////
 
   tft.init();
-  tft.setRotation(1);
+  tft.setRotation(3);
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.setTextDatum(TL_DATUM);
 
-  xTaskCreate(
+  xTaskCreatePinnedToCore(
     codeForTask1,            /* Task function. */
     "RefreshLCDTask",                 /* name of task. */
     10000,                    /* Stack size of task */
     NULL,                     /* parameter of the task */
     1,                        /* priority of the task */
-    &Task1);                   /* Task handle to keep track of created task */
+    &Task1,                   /* Task handle to keep track of created task */
+    1);                   
 
   //////////////////////////////////////////////////
   Serial.println("Initalize UDP Listen");
