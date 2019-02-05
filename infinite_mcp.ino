@@ -182,24 +182,26 @@ void RefreshLCD() {
   tft.drawString(test + CurrentAirplane.DeviceName, screenX, 225, 2);
 
 }
-void func1(uint8_t i) {
-  Serial.print("Key Pressed:");
-  Serial.println(i + 1);
-  mcp.displayNumber(i + 1, 350, -1000, 10);
+void func1(bool i, uint8_t j) {
+
+  switch(i){
+    case 0:
+      Serial.print("Key Pressed:");
+      break;
+    case 1:
+      Serial.print("Key Released:");
+  }
+  Serial.println(j + 1);
+  mcp.displayNumber(0,j);
+  
 }
 
-void func2(uint8_t i) {
-  Serial.print("Key Released:");
-  Serial.println(i + 1);
-  mcp.displayNumber(i + 1, 350, -1000, 10);
-}
-
-void func3(uint8_t i, int j) {
+void func2(uint8_t i, int j) {
   Serial.print("Encoder ");
   Serial.print(i);
   Serial.print(" Changed:");
   Serial.println(j);
-  mcp.displayNumber(j, 350, -1000, 10);
+  mcp.displayNumber(i,j);
 }
 
 void codeForTask1( void * parameter )
@@ -217,7 +219,7 @@ void codeForTask2( void * parameter )
     //                  (int16_t)CurrentAirplane.IndicatedAirspeedKts, 
     //                  (int16_t)(CurrentAirplane.VerticalSpeed * 196.85), 
     //                  (int16_t)CurrentAirplane.HeadingMagnetic);
-     mcp.changeCallbackFunc(func2, func1, func3);
+     mcp.changeCallbackFunc(func1, func2);
     
   }
 }
@@ -248,7 +250,7 @@ void setup()
   //Load Last client address EEPROM -> CurrentAirplane
 
   //////////////////////////////////////////////////
-  Serial.println("Initalize LED Digit");
+  Serial.println("Initalize MCPanel");
   //////////////////////////////////////////////////
 
   mcp.begin();
