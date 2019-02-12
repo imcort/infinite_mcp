@@ -99,15 +99,15 @@ void APIDeviceInfoParser(JsonObject& root) {
 
 void ParseTCPRecivedData(uint8_t* data, size_t& len) {
 
-  //doc.clear();
-  DynamicJsonDocument doc(2048);
+  doc.clear();
+  //DynamicJsonDocument doc(2048);
   DeserializationError error = deserializeJson(doc, data, len);
 
   if (error) {
     Serial.print(F("###Json Parser Failed: "));
     Serial.println(error.c_str());
-    Serial.write(data, len);
-    Serial.println();
+    //Serial.write(data, len);
+    //Serial.println();
     return;
   }
 
@@ -144,25 +144,24 @@ void ParseTCPRecivedData(uint8_t* data, size_t& len) {
 
 void ParseUDPRecivedData(uint8_t* data, size_t& len) {
 
-  DeserializationError err = deserializeJson(doc, data, len);
+  if (!client.connected()) {
+    doc.clear();
+    DeserializationError err = deserializeJson(doc, data, len);
 
-  if (err) {
-    Serial.print(F("deserializeJson() failed: "));
-    Serial.println(err.c_str());
-    return;
-  }
-
-  JsonObject obj = doc.as<JsonObject>();
-
-  JsonArray arr = obj["Addresses"];
-
-  for (int i = 0; i < arr.size(); i++) {
-
-    if (CurrentAirplane.ClientAddress.fromString(arr[i].as<String>())) {
-
-      CurrentAirplane.ClientPort = obj["Port"];
+    if (err) {
+      Serial.print(F("deserializeJson() failed: "));
+      Serial.println(err.c_str());
       return;
+    }
 
+    JsonObject obj = doc.as<JsonObject>();
+    JsonArray arr = obj["Addresses"];
+
+    for (int i = 0; i < arr.size(); i++) {
+      if (CurrentAirplane.ClientAddress.fromString(arr[i].as<String>())) {
+        CurrentAirplane.ClientPort = obj["Port"];
+        return;
+      }
     }
   }
 
@@ -239,6 +238,29 @@ void SendJoystickToClient(uint8_t Joyname, int16_t Joyvalue) {
   paramvalue["Name"] = (String)Joyname;
   paramvalue["Value"] = (String)Joyvalue;
 
+
+  //Encode and Send:
+  String JsonCommand;
+  serializeJson(root, JsonCommand);
+
+  //Serial.println(JsonCommand);
+  uint32_t strsize = JsonCommand.length();
+
+  client.write((char*)(&strsize), 4);          //size
+  client.write(JsonCommand.c_str(), strsize);     //data
+
+}
+
+void SendAPToClient(String Cmd, int16_t val) {
+
+  // We now create a URI for the request
+  doc.clear();
+  JsonObject root = doc.to<JsonObject>();
+
+  root["Command"] = (String)"Commands.Autopilot." + Cmd;
+  JsonArray param = root.createNestedArray("Parameters");
+  JsonObject paramvalue = param.createNestedObject();
+  paramvalue["Value"] = (String)val;
 
   //Encode and Send:
   String JsonCommand;

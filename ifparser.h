@@ -115,6 +115,6 @@ void SendCommandToClient(String Cmd/*, APICommand Cmd*/);
 void SendJoystickToClient(uint8_t Joyname, int16_t Joyvalue);
 void SendPOVToClient(int8_t xValue, int8_t yValue);
 void SendButtonToClient(uint8_t btnNum, bool isPress);
-
+void SendAPToClient(String Cmd, int16_t val);
 
 #endif // __IFPARSER_H__

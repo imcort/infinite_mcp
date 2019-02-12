@@ -202,6 +202,8 @@ void func2(uint8_t i, int j) {
   Serial.print(" Changed:");
   Serial.println(j);
   mcp.displayNumber(i,j);
+  if(i==0)
+    SendAPToClient("SetHeading", j);
 }
 
 void codeForTask1( void * parameter )
