@@ -1,12 +1,12 @@
 /*
- * Dependencies:
- * AsyncTCP:https://github.com/me-no-dev/AsyncTCP
- * MCPanel:
- * PCF8575:
- * TFT_eSPI:
- * WiFiManager-development:
- * ArduinoJson 6.8.0-beta:
- */
+   Dependencies:
+   AsyncTCP:https://github.com/me-no-dev/AsyncTCP
+   MCPanel:
+   PCF8575:
+   TFT_eSPI:
+   WiFiManager-development:
+   ArduinoJson 6.8.0-beta:
+*/
 
 #include <WiFi.h>
 #include "AsyncUDP.h"
@@ -37,7 +37,9 @@ MCPanel mcp;
 
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
-TaskHandle_t Task1,Task2;
+TaskHandle_t Task1, Task2;
+
+static bool makeConnectFlag = 1;
 
 void SendCommandTask() { //切换LED状态
 
@@ -184,7 +186,7 @@ void RefreshLCD() {
 }
 void func1(bool i, uint8_t j) {
 
-  switch(i){
+  switch (i) {
     case 0:
       Serial.print("Key Pressed:");
       break;
@@ -192,8 +194,8 @@ void func1(bool i, uint8_t j) {
       Serial.print("Key Released:");
   }
   Serial.println(j + 1);
-  mcp.displayNumber(0,j);
-  
+  mcp.displayNumber(0, j);
+
 }
 
 void func2(uint8_t i, int j) {
@@ -201,8 +203,8 @@ void func2(uint8_t i, int j) {
   Serial.print(i);
   Serial.print(" Changed:");
   Serial.println(j);
-  mcp.displayNumber(i,j);
-  if(i==0)
+  mcp.displayNumber(i, j);
+  if (i == 0)
     SendAPToClient("SetHeading", j);
 }
 
@@ -217,12 +219,12 @@ void codeForTask2( void * parameter )
 {
 
   for (;;) {
-    //mcp.displayNumber((int16_t)CurrentAirplane.AltitudeMSL, 
-    //                  (int16_t)CurrentAirplane.IndicatedAirspeedKts, 
-    //                  (int16_t)(CurrentAirplane.VerticalSpeed * 196.85), 
+    //mcp.displayNumber((int16_t)CurrentAirplane.AltitudeMSL,
+    //                  (int16_t)CurrentAirplane.IndicatedAirspeedKts,
+    //                  (int16_t)(CurrentAirplane.VerticalSpeed * 196.85),
     //                  (int16_t)CurrentAirplane.HeadingMagnetic);
-     mcp.changeCallbackFunc(func1, func2);
-    
+    mcp.changeCallbackFunc(func1, func2);
+
   }
 }
 
@@ -301,6 +303,7 @@ void setup()
   client.onConnect([](void* obj, AsyncClient * c) {
 
     Serial.println("TCP Connected..");
+    makeConnectFlag = 1;
     MakeConnectTicker.detach();
     SendCommandTicker.attach(0.1, SendCommandTask);
     SaveClientAddr(CurrentAirplane.ClientAddress, CurrentAirplane.ClientPort);
@@ -315,10 +318,13 @@ void setup()
   });           //data received
   client.onDisconnect([](void* obj, AsyncClient * c) {
 
-    SendCommandTicker.detach();
-    MakeConnectTicker.attach(0.5, MakeConnectTask);
-    Serial.print("onDisconnect");
-
+    if (makeConnectFlag) {
+      SendCommandTicker.detach();
+      MakeConnectTicker.attach(0.5, MakeConnectTask);
+      Serial.print("onDisconnect");
+      
+    }
+    makeConnectFlag = 0;
   });
   MakeConnectTicker.attach(0.5, MakeConnectTask);
   /*
@@ -333,7 +339,7 @@ void setup()
 }
 
 void loop() {
- 
- delay(1000);
+
+  delay(1000);
 
 }

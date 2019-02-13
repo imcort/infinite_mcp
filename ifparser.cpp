@@ -1,7 +1,7 @@
 #include "ifparser.h"
 
 AirplaneState CurrentAirplane;
-DynamicJsonDocument doc(2048);
+//DynamicJsonDocument doc(2048);
 
 void APIAircraftStateParser(JsonObject& root) {
 
@@ -99,15 +99,21 @@ void APIDeviceInfoParser(JsonObject& root) {
 
 void ParseTCPRecivedData(uint8_t* data, size_t& len) {
 
-  doc.clear();
-  //DynamicJsonDocument doc(2048);
+  //doc.clear();
+
+  while ((*data != '{') && (len > 1)) {
+    data++;
+    len--;
+  }
+
+  DynamicJsonDocument doc(2048);
   DeserializationError error = deserializeJson(doc, data, len);
 
   if (error) {
     Serial.print(F("###Json Parser Failed: "));
     Serial.println(error.c_str());
-    //Serial.write(data, len);
-    //Serial.println();
+    Serial.write(data, len / 5);
+    Serial.println();
     return;
   }
 
@@ -145,7 +151,7 @@ void ParseTCPRecivedData(uint8_t* data, size_t& len) {
 void ParseUDPRecivedData(uint8_t* data, size_t& len) {
 
   if (!client.connected()) {
-    doc.clear();
+    DynamicJsonDocument doc(512);
     DeserializationError err = deserializeJson(doc, data, len);
 
     if (err) {
@@ -209,7 +215,8 @@ bool ConnectClient() {  //从UDP或者EEPROM连接客户端
 void SendCommandToClient(String Cmd/*, APICommand Cmd*/) {
 
   // We now create a URI for the request
-  doc.clear();
+  //doc.clear();
+  StaticJsonDocument<256> doc;
   JsonObject root = doc.to<JsonObject>();
 
   root["Command"] = Cmd;
@@ -229,7 +236,8 @@ void SendCommandToClient(String Cmd/*, APICommand Cmd*/) {
 void SendJoystickToClient(uint8_t Joyname, int16_t Joyvalue) {
 
   // We now create a URI for the request
-  doc.clear();
+  //doc.clear();
+  StaticJsonDocument<256> doc;
   JsonObject root = doc.to<JsonObject>();
 
   root["Command"] = "NetworkJoystick.SetAxisValue";
@@ -254,7 +262,8 @@ void SendJoystickToClient(uint8_t Joyname, int16_t Joyvalue) {
 void SendAPToClient(String Cmd, int16_t val) {
 
   // We now create a URI for the request
-  doc.clear();
+  //doc.clear();
+  StaticJsonDocument<256> doc;
   JsonObject root = doc.to<JsonObject>();
 
   root["Command"] = (String)"Commands.Autopilot." + Cmd;
@@ -266,7 +275,7 @@ void SendAPToClient(String Cmd, int16_t val) {
   String JsonCommand;
   serializeJson(root, JsonCommand);
 
-  //Serial.println(JsonCommand);
+  Serial.println(JsonCommand);
   uint32_t strsize = JsonCommand.length();
 
   client.write((char*)(&strsize), 4);          //size
@@ -277,7 +286,8 @@ void SendAPToClient(String Cmd, int16_t val) {
 void SendPOVToClient(int8_t xValue, int8_t yValue) {
 
   // We now create a URI for the request
-  doc.clear();
+  //doc.clear();
+  StaticJsonDocument<256> doc;
   JsonObject root = doc.to<JsonObject>();
 
   root["Command"] = "NetworkJoystick.SetPOVState";
@@ -304,7 +314,8 @@ void SendPOVToClient(int8_t xValue, int8_t yValue) {
 void SendButtonToClient(uint8_t btnNum, bool isPress) {
 
   // We now create a URI for the request
-  doc.clear();
+  //doc.clear();
+  StaticJsonDocument<256> doc;
   JsonObject root = doc.to<JsonObject>();
 
   root["Command"] = "NetworkJoystick.SetButtonState";
