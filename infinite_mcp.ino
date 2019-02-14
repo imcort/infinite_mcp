@@ -204,8 +204,20 @@ void func2(uint8_t i, int j) {
   Serial.print(" Changed:");
   Serial.println(j);
   mcp.displayNumber(i, j);
-  if (i == 0)
-    SendAPToClient("SetHeading", j);
+  switch (i) {
+    case 0:
+      SendAPToClient("SetHeading", j);
+      break;
+    case 1:
+      SendAPToClient("SetVS", j);
+      break;
+    case 2:
+      SendAPToClient("SetSpeed", j);
+      break;
+    case 3:
+      SendAPToClient("SetAltitude", j);
+      break;
+  }
 }
 
 void codeForTask1( void * parameter )
@@ -322,7 +334,7 @@ void setup()
       SendCommandTicker.detach();
       MakeConnectTicker.attach(0.5, MakeConnectTask);
       Serial.print("onDisconnect");
-      
+
     }
     makeConnectFlag = 0;
   });

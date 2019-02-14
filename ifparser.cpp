@@ -99,20 +99,13 @@ void APIDeviceInfoParser(JsonObject& root) {
 
 void ParseTCPRecivedData(uint8_t* data, size_t& len) {
 
-  //doc.clear();
-
-  while ((*data != '{') && (len > 1)) {
-    data++;
-    len--;
-  }
-
   DynamicJsonDocument doc(2048);
   DeserializationError error = deserializeJson(doc, data, len);
 
   if (error) {
     Serial.print(F("###Json Parser Failed: "));
     Serial.println(error.c_str());
-    Serial.write(data, len / 5);
+    Serial.write(data, len);
     Serial.println();
     return;
   }
@@ -143,8 +136,6 @@ void ParseTCPRecivedData(uint8_t* data, size_t& len) {
     Serial.println(MsgType.c_str());
     return;
   }
-
-
 
 }
 
@@ -212,6 +203,21 @@ bool ConnectClient() {  //从UDP或者EEPROM连接客户端
 
 }
 
+void writeJsonToClient(JsonObject &root) {
+
+  String JsonCommand;
+  serializeJson(root, JsonCommand);
+
+  //Serial.println(JsonCommand);
+  uint32_t strsize = JsonCommand.length();
+
+  client.write((char*)(&strsize), 4);          //size
+  if (client.write(JsonCommand.c_str(), strsize) == 0) {
+    client.close();
+  }
+
+}
+
 void SendCommandToClient(String Cmd/*, APICommand Cmd*/) {
 
   // We now create a URI for the request
@@ -222,14 +228,7 @@ void SendCommandToClient(String Cmd/*, APICommand Cmd*/) {
   root["Command"] = Cmd;
   root.createNestedArray("Parameters");
 
-  String JsonCommand;
-  serializeJson(root, JsonCommand);
-
-  //Serial.println(JsonCommand);
-  uint32_t strsize = JsonCommand.length();
-
-  client.write((char*)(&strsize), 4);          //size
-  client.write(JsonCommand.c_str(), strsize);     //data
+  writeJsonToClient(root);
 
 }
 
@@ -246,16 +245,7 @@ void SendJoystickToClient(uint8_t Joyname, int16_t Joyvalue) {
   paramvalue["Name"] = (String)Joyname;
   paramvalue["Value"] = (String)Joyvalue;
 
-
-  //Encode and Send:
-  String JsonCommand;
-  serializeJson(root, JsonCommand);
-
-  //Serial.println(JsonCommand);
-  uint32_t strsize = JsonCommand.length();
-
-  client.write((char*)(&strsize), 4);          //size
-  client.write(JsonCommand.c_str(), strsize);     //data
+  writeJsonToClient(root);
 
 }
 
@@ -271,15 +261,7 @@ void SendAPToClient(String Cmd, int16_t val) {
   JsonObject paramvalue = param.createNestedObject();
   paramvalue["Value"] = (String)val;
 
-  //Encode and Send:
-  String JsonCommand;
-  serializeJson(root, JsonCommand);
-
-  Serial.println(JsonCommand);
-  uint32_t strsize = JsonCommand.length();
-
-  client.write((char*)(&strsize), 4);          //size
-  client.write(JsonCommand.c_str(), strsize);     //data
+  writeJsonToClient(root);
 
 }
 
@@ -299,15 +281,7 @@ void SendPOVToClient(int8_t xValue, int8_t yValue) {
   paramvalue["Name"] = "Y";
   paramvalue["Value"] = (String)yValue;
 
-  //Encode and Send:
-  String JsonCommand;
-  serializeJson(root, JsonCommand);
-
-  //Serial.println(JsonCommand);
-  uint32_t strsize = JsonCommand.length();
-
-  client.write((char*)(&strsize), 4);          //size
-  client.write(JsonCommand.c_str(), strsize);     //data
+  writeJsonToClient(root);
 
 }
 
@@ -324,14 +298,6 @@ void SendButtonToClient(uint8_t btnNum, bool isPress) {
   paramvalue["Name"] = (String)btnNum;
   paramvalue["Value"] = isPress ? "Down" : "Up";
 
-  //Encode and Send:
-  String JsonCommand;
-  serializeJson(root, JsonCommand);
-
-  //Serial.println(JsonCommand);
-  uint32_t strsize = JsonCommand.length();
-
-  client.write((char*)(&strsize), 4);          //size
-  client.write(JsonCommand.c_str(), strsize);     //data
+  writeJsonToClient(root);
 
 }
