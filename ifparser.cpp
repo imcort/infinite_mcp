@@ -1,7 +1,6 @@
 #include "ifparser.h"
 
 AirplaneState CurrentAirplane;
-//DynamicJsonDocument doc(2048);
 
 void APIAircraftStateParser(JsonObject& root) {
 
@@ -114,21 +113,15 @@ void ParseTCPRecivedData(uint8_t* data, size_t& len) {
 
   String MsgType = root["Type"];
   if (MsgType == "Fds.IFAPI.APIAircraftState") {
-    //Serial.println("Fds.IFAPI.APIAircraftState");
     APIAircraftStateParser(root);
-    //serializeJsonPretty(root, Serial);
     return;
 
   } else if (MsgType == "Fds.IFAPI.APIAircraftInfo") {
-    //Serial.println("Fds.IFAPI.APIAircraftInfo");
     APIAircraftInfoParser(root);
-    //serializeJsonPretty(root, Serial);
     return;
 
   } else if (MsgType == "Fds.IFAPI.IFAPIStatus") {
-    //Serial.println("Fds.IFAPI.IFAPIStatus");
     APIDeviceInfoParser(root);
-    //serializeJsonPretty(root, Serial);
     return;
 
   } else {
@@ -212,16 +205,12 @@ void writeJsonToClient(JsonObject &root) {
   uint32_t strsize = JsonCommand.length();
 
   client.write((char*)(&strsize), 4);          //size
-  if (client.write(JsonCommand.c_str(), strsize) == 0) {
-    client.close();
-  }
+  client.write(JsonCommand.c_str(), strsize) == 0)
 
 }
 
 void SendCommandToClient(String Cmd/*, APICommand Cmd*/) {
-
-  // We now create a URI for the request
-  //doc.clear();
+ 
   StaticJsonDocument<256> doc;
   JsonObject root = doc.to<JsonObject>();
 
@@ -233,9 +222,7 @@ void SendCommandToClient(String Cmd/*, APICommand Cmd*/) {
 }
 
 void SendJoystickToClient(uint8_t Joyname, int16_t Joyvalue) {
-
-  // We now create a URI for the request
-  //doc.clear();
+ 
   StaticJsonDocument<256> doc;
   JsonObject root = doc.to<JsonObject>();
 
@@ -251,8 +238,6 @@ void SendJoystickToClient(uint8_t Joyname, int16_t Joyvalue) {
 
 void SendAPToClient(String Cmd, int16_t val) {
 
-  // We now create a URI for the request
-  //doc.clear();
   StaticJsonDocument<256> doc;
   JsonObject root = doc.to<JsonObject>();
 
@@ -267,8 +252,6 @@ void SendAPToClient(String Cmd, int16_t val) {
 
 void SendPOVToClient(int8_t xValue, int8_t yValue) {
 
-  // We now create a URI for the request
-  //doc.clear();
   StaticJsonDocument<256> doc;
   JsonObject root = doc.to<JsonObject>();
 
@@ -287,8 +270,6 @@ void SendPOVToClient(int8_t xValue, int8_t yValue) {
 
 void SendButtonToClient(uint8_t btnNum, bool isPress) {
 
-  // We now create a URI for the request
-  //doc.clear();
   StaticJsonDocument<256> doc;
   JsonObject root = doc.to<JsonObject>();
 
