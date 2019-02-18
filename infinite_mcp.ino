@@ -231,14 +231,14 @@ void func2(uint8_t i, int j) {
   }
 }
 
-void codeForTask1( void * parameter )
+void RefreshLCDTask( void * parameter )
 {
   for (;;) {
     RefreshLCD();
   }
 }
 
-void codeForTask2( void * parameter )
+void MCPanelTask( void * parameter )
 {
 
   for (;;) {
@@ -251,7 +251,7 @@ void codeForTask2( void * parameter )
   }
 }
 
-void codeForTask3( void * parameter )
+void USBJoystickTask( void * parameter )
 {
   for (;;) {
     Usb.Task();
@@ -289,12 +289,12 @@ void setup()
 
   mcp.begin();
   xTaskCreatePinnedToCore(
-    codeForTask2,            /* Task function. */
-    "MCPTask",                 /* name of task. */
+    MCPanelTask,            /* Task function. */
+    "MCPanelTask",                 /* name of task. */
     5000,                    /* Stack size of task */
     NULL,                     /* parameter of the task */
     2,                        /* priority of the task */
-    &Task2,                   /* Task handle to keep track of created task */
+    &Task1,                   /* Task handle to keep track of created task */
     1);
 
   //////////////////////////////////////////////////
@@ -308,12 +308,12 @@ void setup()
   tft.setTextDatum(TL_DATUM);
 
   xTaskCreatePinnedToCore(
-    codeForTask1,            /* Task function. */
+    RefreshLCDTask,            /* Task function. */
     "RefreshLCDTask",                 /* name of task. */
     5000,                    /* Stack size of task */
     NULL,                     /* parameter of the task */
     1,                        /* priority of the task */
-    &Task1,                   /* Task handle to keep track of created task */
+    &Task2,                   /* Task handle to keep track of created task */
     1);
 
   //////////////////////////////////////////////////
@@ -330,7 +330,7 @@ void setup()
     ErrorMessage<uint8_t > (PSTR("SetReportParser"), 1);
 
   xTaskCreatePinnedToCore(
-    codeForTask3,            /* Task function. */
+    USBJoystickTask,            /* Task function. */
     "USBJoystickTask",                 /* name of task. */
     50000,                    /* Stack size of task */
     NULL,                     /* parameter of the task */
