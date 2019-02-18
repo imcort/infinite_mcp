@@ -15,6 +15,11 @@
 #include <WiFiManager.h>
 
 #include <SPI.h>
+#include <usbhid.h>
+#include <hiduniversal.h>
+#include <usbhub.h>
+#include "hidjoystickrptparser.h"
+
 #include "EEPROM.h"
 #include <Ticker.h>
 
@@ -33,11 +38,17 @@ AsyncUDP udp;
 AsyncClient client;
 Ticker SendCommandTicker, MakeConnectTicker;
 
+USB Usb;
+USBHub Hub(&Usb);
+HIDUniversal Hid(&Usb);
+JoystickEvents JoyEvents;
+JoystickReportParser Joy(&JoyEvents);
+
 MCPanel mcp;
 
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
-TaskHandle_t Task1, Task2;
+TaskHandle_t Task1, Task2, Task3;
 
 static bool makeConnectFlag = 1;
 
@@ -240,6 +251,13 @@ void codeForTask2( void * parameter )
   }
 }
 
+void codeForTask3( void * parameter )
+{
+  for (;;) {
+    Usb.Task();
+  }
+}
+
 void setup()
 {
   Serial.begin(2000000);
@@ -297,6 +315,28 @@ void setup()
     1,                        /* priority of the task */
     &Task1,                   /* Task handle to keep track of created task */
     1);
+
+  //////////////////////////////////////////////////
+  Serial.println("Initalize USB");
+  //////////////////////////////////////////////////
+  if (Usb.Init() == -1) {
+    Serial.println("OSC did not start. Restarting");
+    ESP.restart();
+  }
+
+  delay(200);
+
+  if (!Hid.SetReportParser(0, &Joy))
+    ErrorMessage<uint8_t > (PSTR("SetReportParser"), 1);
+
+  xTaskCreatePinnedToCore(
+    codeForTask3,            /* Task function. */
+    "USBJoystickTask",                 /* name of task. */
+    50000,                    /* Stack size of task */
+    NULL,                     /* parameter of the task */
+    1,                        /* priority of the task */
+    &Task3,                   /* Task handle to keep track of created task */
+    1);  
 
   //////////////////////////////////////////////////
   Serial.println("Initalize UDP Listen");

@@ -205,7 +205,7 @@ void writeJsonToClient(JsonObject &root) {
   uint32_t strsize = JsonCommand.length();
 
   client.write((char*)(&strsize), 4);          //size
-  client.write(JsonCommand.c_str(), strsize) == 0)
+  client.write(JsonCommand.c_str(), strsize);
 
 }
 
