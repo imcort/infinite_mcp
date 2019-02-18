@@ -255,6 +255,7 @@ void USBJoystickTask( void * parameter )
 {
   for (;;) {
     Usb.Task();
+    delay(10);
   }
 }
 

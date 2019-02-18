@@ -201,7 +201,7 @@ void writeJsonToClient(JsonObject &root) {
   String JsonCommand;
   serializeJson(root, JsonCommand);
 
-  //Serial.println(JsonCommand);
+  Serial.println(JsonCommand);
   uint32_t strsize = JsonCommand.length();
 
   client.write((char*)(&strsize), 4);          //size
