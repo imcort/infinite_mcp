@@ -17,10 +17,7 @@ void JoystickReportParser::Parse(USBHID *hid, bool is_rpt_id, uint8_t len, uint8
   pad.Y = ((buf[1] >> 2) | buf[2] << 6) & 0x3ff;
   pad.Z = buf[3];
   pad.T = buf[5];
-  //if(memcmp(&pad,&oldPad,sizeof(oldPad)))
-  //  match = false;
 
-  // Calling Game Pad event handler
   if (joyEvents) {
     if (oldPad.X != pad.X) {
       SendJoystickToClient(1, map(pad.X, 0, 1024, -1024, 1024));
@@ -39,9 +36,6 @@ void JoystickReportParser::Parse(USBHID *hid, bool is_rpt_id, uint8_t len, uint8
       oldPad.T = pad.T;
     }
 
-    //joyEvents->OnGamePadChanged(&pad);
-
-    //oldPad = pad;
   }
 
   uint8_t hat = buf[2] >> 4;
